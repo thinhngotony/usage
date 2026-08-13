@@ -9,11 +9,22 @@ python3 -m venv .venv
 .venv/bin/pip install pytest
 ```
 
-Set keys only in the shell or an ignored local environment file:
+Set keys as plain lines, a JSON object, or a JSON array. JSON keeps names
+stable for large accounts:
 
 ```sh
-export CMD_API_KEYS=$'new-key-1\nnew-key-2'
-./usage.py
+cat > keys.json <<'JSON'
+[{"name":"production","key":"user_REPLACE_ME"},{"name":"staging","key":"user_REPLACE_ME"}]
+JSON
+./usage.py --keys-file keys.json
+```
+
+The table shows `READY`/`NOT READY`, usage values, and progress bars. Use
+`--no-color` for logs and `--export usage.json` or `--export usage.csv` for
+redacted reports; exported rows never contain API keys.
+
+```sh
+./usage.py --keys-file keys.json --export usage.json
 ```
 
 The CLI calls the same authenticated Studio API used by the website:
