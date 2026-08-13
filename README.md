@@ -92,6 +92,17 @@ Replace the saved configuration by importing another file:
 ./usage.py --keys-file new-keys.json
 ```
 
+## Project Information
+
+- [About](ABOUT.md) — scope, architecture, and design decisions
+- [Contributing](CONTRIBUTING.md) — development and pull request workflow
+- [Security](SECURITY.md) — credential handling and vulnerability reporting
+- [Changelog](CHANGELOG.md) — user-facing release history
+- [License](LICENSE) — MIT license
+
+Continuous integration runs compilation, the test suite, and credential-pattern checks across supported Python versions for every push and pull request.
+
+
 ## Export
 
 Write a redacted report for sharing or automation:
