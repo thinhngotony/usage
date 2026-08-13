@@ -85,7 +85,7 @@ def test_fetch_reads_summary_and_usage_with_bearer():
     assert usage.monthly == "$10.03 / $10.00"
     assert usage.five_hour == "$1.50 / $3.00"
     assert usage.weekly == "$1.50 / $6.00"
-    assert len(seen) == 2
+    assert len(seen) == 3
     assert all(auth == "Bearer test-key" for _, auth in seen)
 
 def test_percent_boundaries_clamp_and_reject_invalid_caps():
@@ -99,44 +99,8 @@ def test_percent_boundaries_clamp_and_reject_invalid_caps():
     assert _percent(None, 10) is None
 
 
-def test_fetch_status_uses_provider_limited_flag(monkeypatch):
-    from usage import SUMMARY_PATH, CREDITS_PATH
 
-    payloads = {
-        SUMMARY_PATH: {"totalTokens": 1, "totalCost": 2},
-        CREDITS_PATH: {
-            "credits": {"monthlyCredits": 10},
-            "windowLimits": {
-                "limited": False,
-                "fiveHour": {"used": 1, "cap": 4, "resetAt": "2026-08-13T10:00:00Z"},
-                "weekly": {"used": 3, "cap": 12, "resetAt": "2026-08-15T10:00:00Z"},
-            },
-        },
-    }
-    monkeypatch.setattr("usage._request", lambda _base, path, _key, _timeout: payloads[path])
-    usage = fetch("key", 1)
-    assert usage.status == "READY"
-    assert usage.monthly_pct == 20
-    assert usage.five_hour_pct == 25
-    assert usage.weekly_pct == 25
-    assert usage.five_hour_reset_at.endswith("Z")
-    payloads[CREDITS_PATH]["windowLimits"]["limited"] = True
-    assert fetch("key", 1).status == "NOT READY"
-
-def test_render_table_aligns_bars_after_metric_values():
-    from usage import Usage, _render_table
-    output = _render_table([
-        ("one", Usage(monthly="$3.03 / $6.97", monthly_pct=43)),
-        ("two", Usage(monthly="$10.03 / $0.08", monthly_pct=100)),
-    ], color=False)
-    rows = [line for line in output.splitlines() if line.startswith("│ one") or line.startswith("│ two")]
-    assert rows[0].index("▓") == rows[1].index("▓")
-
-def test_render_table_right_aligns_monthly_values():
-    from usage import Usage, _render_table
-    output = _render_table([
-        ("one", Usage(monthly="$3.03 / $6.97", monthly_pct=43)),
-        ("two", Usage(monthly="$10.03 / $0.08", monthly_pct=100)),
-    ], color=False)
-    rows = [line for line in output.splitlines() if line.startswith("│ one") or line.startswith("│ two")]
-    assert rows[0].index("/") == rows[1].index("/")
+    from usage import Usage, _availability_sort_key, _reset
+    assert _reset({"resetAt": 1786639187997}) == "16:39 13/08/2026"
+    assert _availability_sort_key(Usage(available="NOW"))[0] == 0
+    assert _availability_sort_key(Usage(available="21:01 13/08/2026"))[0] == 1

@@ -21,6 +21,8 @@ from typing import Any
 BASE_URL = "https://api.commandcode.ai"
 SUMMARY_PATH = "/alpha/usage/summary"
 CREDITS_PATH = "/alpha/billing/credits"
+SUBSCRIPTION_PATH = "/alpha/billing/subscriptions"
+STATE_PATH = Path(".usage.json")
 
 
 @dataclass
@@ -29,12 +31,45 @@ class Usage:
     monthly: str = "—"
     five_hour: str = "—"
     weekly: str = "—"
-    status: str = "NOT READY"
     monthly_pct: float | None = None
     five_hour_pct: float | None = None
     weekly_pct: float | None = None
+    monthly_reset_at: str | None = None
     five_hour_reset_at: str | None = None
     weekly_reset_at: str | None = None
+    available: str = "NOW"
+def _format_datetime(value: Any) -> str | None:
+    if value is None or not str(value).strip():
+        return None
+    if isinstance(value, (int, float)):
+        value = datetime.fromtimestamp(value / 1000, timezone.utc).isoformat()
+    try:
+        return datetime.fromisoformat(str(value).replace("Z", "+00:00")).astimezone(timezone.utc).strftime("%H:%M %d/%m/%Y")
+    except ValueError:
+        return str(value)
+
+
+def _reset(data: Any) -> str | None:
+    if not isinstance(data, dict):
+        return None
+    for name in ("resetAt", "reset_at", "resetTime", "reset_time", "resetsAt", "resets_at"):
+        if name in data:
+            return _format_datetime(data[name])
+    return None
+
+
+def _availability(monthly_reset: str | None, five_reset: str | None, weekly_reset: str | None, monthly_pct: float | None, five_pct: float | None, weekly_pct: float | None) -> str:
+    reset = monthly_reset if monthly_pct is not None and monthly_pct >= 100 else five_reset if five_pct is not None and five_pct >= 100 else weekly_reset if weekly_pct is not None and weekly_pct >= 100 else None
+    return reset or "NOW"
+
+
+def _availability_sort_key(usage: Usage) -> tuple[int, datetime]:
+    if usage.available == "NOW":
+        return (0, datetime.min.replace(tzinfo=timezone.utc))
+    try:
+        return (1, datetime.strptime(usage.available, "%H:%M %d/%m/%Y").replace(tzinfo=timezone.utc))
+    except ValueError:
+        return (1, datetime.max.replace(tzinfo=timezone.utc))
 
 
 def _percent(used: float | None, cap: float | None) -> float | None:
@@ -43,14 +78,7 @@ def _percent(used: float | None, cap: float | None) -> float | None:
     return min(100.0, max(0.0, used / cap * 100.0))
 
 
-def _reset(data: Any) -> str | None:
-    if not isinstance(data, dict):
-        return None
-    for name in ("resetAt", "reset_at", "resetTime", "reset_time", "resetsAt", "resets_at"):
-        value = data.get(name)
-        if value is not None and str(value).strip():
-            return str(value)
-    return None
+
 
 def _parse_keys(raw: str) -> list[tuple[str | None, str]]:
     text = raw.strip()
@@ -142,27 +170,17 @@ def _progress_bar(percent: float | None, width: int = 10, color: bool = False) -
 
 
 def _render_table(rows: list[tuple[str, Usage]], width: int | None = None, color: bool = False) -> str:
-    """Return a width-aware usage table; output is deterministic when color is off."""
-    headers = ("KEY", "STATUS", "MONTHLY", "5-HOUR", "WEEKLY")
-    metric_rows = []
-    for key, usage in rows:
-        metric_rows.append([
-            str(key), str(usage.status), str(usage.monthly),
-            str(usage.five_hour), str(usage.weekly),
-        ])
+    """Return a width-aware usage table without a redundant status column."""
+    headers = ("KEY", "MONTHLY", "5-HOUR", "WEEKLY", "AVAILABLE")
+    metric_rows = [[str(key), str(usage.monthly), str(usage.five_hour), str(usage.weekly), str(usage.available)] for key, usage in rows]
     metric_widths = [max(_visible_len(row[col]) for row in metric_rows) if metric_rows else 0 for col in range(5)]
     cells = []
     for values, (_, usage) in zip(metric_rows, rows):
-        cells.append([
-            values[0], values[1],
-            f"{values[2].rjust(metric_widths[2])} {_progress_bar(usage.monthly_pct, 10, color)}",
-            f"{values[3].rjust(metric_widths[3])} {_progress_bar(usage.five_hour_pct, 10, color)}",
-            f"{values[4].rjust(metric_widths[4])} {_progress_bar(usage.weekly_pct, 10, color)}",
-        ])
+        cells.append([values[0], f"{values[1].rjust(metric_widths[1])} {_progress_bar(usage.monthly_pct, 10, color)}", f"{values[2].rjust(metric_widths[2])} {_progress_bar(usage.five_hour_pct, 10, color)}", f"{values[3].rjust(metric_widths[3])} {_progress_bar(usage.weekly_pct, 10, color)}", values[4]])
     data = [list(headers), *cells]
     widths = [max(_visible_len(row[col]) for row in data) for col in range(len(headers))]
     if width is not None:
-        available = max(5, width - 18)
+        available = max(5, width - 15)
         while sum(widths) > available:
             index = max(range(len(widths)), key=lambda col: widths[col])
             if widths[index] <= 1:
@@ -223,14 +241,14 @@ def _request(base_url: str, path: str, key: str, timeout: float) -> Any:
         raise RuntimeError(f"network error: {error.reason}") from None
     except json.JSONDecodeError:
         raise RuntimeError(f"{path} returned non-JSON data") from None
-
-
 def fetch(key: str, timeout: float, base_url: str = BASE_URL) -> Usage:
-    with ThreadPoolExecutor(max_workers=2) as pool:
+    with ThreadPoolExecutor(max_workers=3) as pool:
         summary_future = pool.submit(_request, base_url, SUMMARY_PATH, key, timeout)
         credits_future = pool.submit(_request, base_url, CREDITS_PATH, key, timeout)
+        subscription_future = pool.submit(_request, base_url, SUBSCRIPTION_PATH, key, timeout)
         summary = summary_future.result()
         credits = credits_future.result()
+        subscription = subscription_future.result()
     tokens, monthly_cost, _ = _summary(summary)
     window = credits.get("windowLimits", {}) if isinstance(credits, dict) else {}
     window = window if isinstance(window, dict) else {}
@@ -244,49 +262,49 @@ def fetch(key: str, timeout: float, base_url: str = BASE_URL) -> Usage:
     five_used, five_cap = _number(five, "used"), _number(five, "cap")
     weekly_used, weekly_cap = _number(weekly, "used"), _number(weekly, "cap")
     limited = window.get("limited")
-    status = "READY" if limited is False else "NOT READY"
+    subscription_data = subscription.get("data", subscription) if isinstance(subscription, dict) else {}
+    monthly_reset_at = subscription_data.get("currentPeriodEnd") if isinstance(subscription_data, dict) else None
+    monthly_reset_at = _format_datetime(monthly_reset_at)
+    monthly_pct = _percent(monthly_cost, monthly_cap)
+    five_hour_pct = _percent(five_used, five_cap)
+    weekly_pct = _percent(weekly_used, weekly_cap)
+    five_reset_at, weekly_reset_at = _reset(five), _reset(weekly)
+    available = _availability(monthly_reset_at, five_reset_at, weekly_reset_at, monthly_pct, five_hour_pct, weekly_pct)
     return Usage(
         total_tokens="—" if tokens is None else f"{tokens:,.0f}",
         monthly=f"{_money(monthly_cost)} / {_money(monthly_cap)}",
         five_hour=f"{_money(five_used)} / {_money(five_cap)}",
         weekly=f"{_money(weekly_used)} / {_money(weekly_cap)}",
-        status=status,
-        monthly_pct=_percent(monthly_cost, monthly_cap),
-        five_hour_pct=_percent(five_used, five_cap),
-        weekly_pct=_percent(weekly_used, weekly_cap),
-        five_hour_reset_at=_reset(five),
-        weekly_reset_at=_reset(weekly),
+        monthly_pct=monthly_pct,
+        five_hour_pct=five_hour_pct,
+        weekly_pct=weekly_pct,
+        monthly_reset_at=monthly_reset_at,
+        five_hour_reset_at=five_reset_at,
+        weekly_reset_at=weekly_reset_at,
+        available=available,
     )
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Show Command Code usage for multiple API keys")
-    parser.add_argument("--keys", default=os.getenv("CMD_API_KEYS"), help="comma/newline keys or JSON array/object (or CMD_API_KEYS)")
-    parser.add_argument("--keys-file", type=Path, help="read key input from a file")
-    parser.add_argument("--base-url", default=os.getenv("CMD_API_BASE_URL", BASE_URL))
+    parser.add_argument("--keys-file", type=Path, help="import JSON key file on first run")
+    parser.add_argument("--base-url", default=BASE_URL)
     parser.add_argument("--timeout", type=float, default=15.0)
     parser.add_argument("--export", type=Path, help="write redacted usage rows as JSON or CSV")
-    parser.add_argument("--export-format", choices=("json", "csv"), help="format for --export (otherwise inferred from extension)")
-    parser.add_argument("--no-color", action="store_true", help="disable ANSI colors")
+    parser.add_argument("--export-format", choices=("json", "csv"))
+    parser.add_argument("--no-color", action="store_true")
     args = parser.parse_args(argv)
-    if args.keys_file:
-        try:
-            raw_keys = args.keys_file.read_text()
-        except OSError as error:
-            parser.error(f"cannot read --keys-file: {error}")
-    else:
-        raw_keys = args.keys
-    if not raw_keys:
-        parser.error("set CMD_API_KEYS, --keys, or --keys-file")
+    source = args.keys_file or STATE_PATH
+    if not source.exists():
+        parser.error("first run requires --keys-file keys.json")
     try:
-        named_keys = _parse_keys(raw_keys)
-    except ValueError as error:
+        named_keys = _parse_keys(source.read_text())
+    except (OSError, ValueError) as error:
         parser.error(str(error))
-    if not named_keys:
-        parser.error("no API keys provided")
     failures = 0
-    with ThreadPoolExecutor(max_workers=min(4, len(named_keys))) as pool:
-        futures = {pool.submit(fetch, key, args.timeout, args.base_url): index for index, (_, key) in enumerate(named_keys, 1)}
+    keys = [(name or f"key-{index}", key) for index, (name, key) in enumerate(named_keys, 1)]
+    with ThreadPoolExecutor(max_workers=min(4, len(keys))) as pool:
+        futures = {pool.submit(fetch, key, args.timeout, args.base_url): index for index, (_, key) in enumerate(keys)}
         results = {}
         for future in as_completed(futures):
             index = futures[future]
@@ -295,13 +313,13 @@ def main(argv: list[str] | None = None) -> int:
             except (RuntimeError, ValueError) as error:
                 failures += 1
                 results[index] = Usage(monthly=f"ERROR: {error}")
-    rows = [(name or f"key-{index}", key, results[index]) for index, (name, key) in enumerate(named_keys, 1)]
+    STATE_PATH.write_text(json.dumps([{"name": name, "key": key} for name, key in keys], indent=2) + "\n")
+    rows = [(name, key, results[index]) for index, (name, key) in enumerate(keys)]
+    rows.sort(key=lambda row: _availability_sort_key(row[2]))
     if args.export:
-        format_name = args.export_format or ("csv" if args.export.suffix.lower() == ".csv" else "json")
-        _export(rows, args.export, format_name)
+        _export(rows, args.export, args.export_format or ("csv" if args.export.suffix.lower() == ".csv" else "json"))
     else:
-        display_rows = [(name, usage) for name, _, usage in rows]
-        print(_render_table(display_rows, width=shutil.get_terminal_size().columns, color=sys.stdout.isatty() and not args.no_color))
+        print(_render_table([(name, usage) for name, _, usage in rows], width=shutil.get_terminal_size().columns, color=sys.stdout.isatty() and not args.no_color))
     return 1 if failures else 0
 
 
