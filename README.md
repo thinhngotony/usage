@@ -50,11 +50,12 @@ The terminal table shows:
 | Column | Meaning |
 | :--- | :--- |
 | `KEY` | Name from the imported key file |
-| `MONTHLY` | Current monthly cost, cap, and progress |
+| `MONTHLY` | Current-period cost, fixed monthly quota, and progress |
 | `5-HOUR` | Rolling five-hour cost, cap, and progress |
 | `WEEKLY` | Rolling seven-day cost, cap, and progress |
 | `AVAILABLE` | `NOW` or the earliest applicable reset, formatted as `HH:MM DD/MM/YYYY` |
 
+Monthly progress is calculated as current-period cost divided by the fixed `$10.00` monthly quota. An account waits for the monthly reset when monthly usage reaches the quota; otherwise, five-hour and weekly exhaustion determine availability.
 Accounts are sorted with currently available accounts first, then by the nearest reset time.
 Monthly exhaustion takes precedence over five-hour and weekly exhaustion.
 

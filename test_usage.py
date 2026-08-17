@@ -1,9 +1,10 @@
 import json
 import threading
+
 from datetime import datetime, timedelta, timezone
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
-from usage import _recent_cost, fetch
+from usage import _availability, _recent_cost, fetch
 
 
 from pathlib import Path
@@ -61,8 +62,10 @@ def test_fetch_reads_summary_and_usage_with_bearer():
             seen.append((self.path, self.headers["Authorization"]))
             if self.path == "/alpha/usage/summary":
                 payload = {"totalTokens": 573169426, "totalCost": 10.0266}
+            elif self.path == "/alpha/billing/credits":
+                payload = {"credits": {"monthlyCredits": 0.08}, "windowLimits": {"fiveHour": {"used": 0, "cap": 3}, "weekly": {"used": 0, "cap": 6}}}
             else:
-                payload = {"credits": {"monthlyCredits": 10}, "windowLimits": {"fiveHour": {"used": 1.5, "cap": 3}, "weekly": {"used": 1.5, "cap": 6}}}
+                payload = {"currentPeriodEnd": "2026-09-01T00:00:00Z"}
             body = json.dumps(payload).encode()
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
@@ -83,10 +86,33 @@ def test_fetch_reads_summary_and_usage_with_bearer():
         thread.join()
     assert usage.total_tokens == "573,169,426"
     assert usage.monthly == "$10.03 / $10.00"
-    assert usage.five_hour == "$1.50 / $3.00"
-    assert usage.weekly == "$1.50 / $6.00"
+    assert usage.monthly_pct == 100
+    assert usage.five_hour == "$0.00 / $3.00"
+    assert usage.weekly == "$0.00 / $6.00"
+    assert usage.available == "00:00 01/09/2026"
     assert len(seen) == 3
     assert all(auth == "Bearer test-key" for _, auth in seen)
+
+def test_fetch_uses_fixed_monthly_quota_not_remaining_credits(monkeypatch):
+    payloads = {
+        "/alpha/usage/summary": {"totalTokens": 1, "totalCost": 5.05},
+        "/alpha/billing/credits": {
+            "credits": {"monthlyCredits": 4.95},
+            "windowLimits": {
+                "fiveHour": {"used": 0, "cap": 3},
+                "weekly": {"used": 5.05, "cap": 6},
+            },
+        },
+        "/alpha/billing/subscriptions": {"currentPeriodEnd": "2026-09-01T00:00:00Z"},
+    }
+    monkeypatch.setattr("usage._request", lambda _base, path, _key, _timeout: payloads[path])
+
+    usage = fetch("key", 1)
+
+    assert usage.monthly == "$5.05 / $10.00"
+    assert usage.monthly_pct == 50.5
+    assert usage.available == "NOW"
+
 
 def test_percent_boundaries_clamp_and_reject_invalid_caps():
     from usage import _percent
@@ -104,3 +130,10 @@ def test_percent_boundaries_clamp_and_reject_invalid_caps():
     assert _reset({"resetAt": 1786639187997}) == "16:39 13/08/2026"
     assert _availability_sort_key(Usage(available="NOW"))[0] == 0
     assert _availability_sort_key(Usage(available="21:01 13/08/2026"))[0] == 1
+
+
+def test_availability_uses_exhausted_window_precedence():
+    assert _availability("MONTH", "FIVE", "WEEK", 100, 50, 50) == "MONTH"
+    assert _availability("MONTH", "FIVE", "WEEK", 90, 100, 50) == "FIVE"
+    assert _availability("MONTH", "FIVE", "WEEK", 90, 50, 100) == "WEEK"
+    assert _availability("MONTH", "FIVE", "WEEK", 90, 50, 50) == "NOW"

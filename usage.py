@@ -23,6 +23,7 @@ SUMMARY_PATH = "/alpha/usage/summary"
 CREDITS_PATH = "/alpha/billing/credits"
 SUBSCRIPTION_PATH = "/alpha/billing/subscriptions"
 STATE_PATH = Path(".usage.json")
+MONTHLY_QUOTA = 10.0
 
 
 @dataclass
@@ -59,8 +60,13 @@ def _reset(data: Any) -> str | None:
 
 
 def _availability(monthly_reset: str | None, five_reset: str | None, weekly_reset: str | None, monthly_pct: float | None, five_pct: float | None, weekly_pct: float | None) -> str:
-    reset = monthly_reset if monthly_pct is not None and monthly_pct >= 100 else five_reset if five_pct is not None and five_pct >= 100 else weekly_reset if weekly_pct is not None and weekly_pct >= 100 else None
-    return reset or "NOW"
+    if monthly_pct is not None and monthly_pct >= 100:
+        return monthly_reset or "NOW"
+    if five_pct is not None and five_pct >= 100:
+        return five_reset or "NOW"
+    if weekly_pct is not None and weekly_pct >= 100:
+        return weekly_reset or "NOW"
+    return "NOW"
 
 
 def _availability_sort_key(usage: Usage) -> tuple[int, datetime]:
@@ -203,7 +209,7 @@ def _summary(payload: Any) -> tuple[float | None, float | None, float | None]:
     return (
         _number(payload, "totalTokens", "total_tokens"),
         _number(payload, "totalCost", "total_cost"),
-        _number(payload, "totalMonthlyCredits", "monthlyCredits", "monthly_credits"),
+        _number(payload, "totalMonthlyCredits", "total_monthly_credits"),
     )
 
 
@@ -250,29 +256,26 @@ def fetch(key: str, timeout: float, base_url: str = BASE_URL) -> Usage:
         credits = credits_future.result()
         subscription = subscription_future.result()
     tokens, monthly_cost, _ = _summary(summary)
+    monthly_quota = MONTHLY_QUOTA
     window = credits.get("windowLimits", {}) if isinstance(credits, dict) else {}
     window = window if isinstance(window, dict) else {}
     five = window.get("fiveHour", {})
     five = five if isinstance(five, dict) else {}
     weekly = window.get("weekly", {})
     weekly = weekly if isinstance(weekly, dict) else {}
-    credit_data = credits.get("credits", {}) if isinstance(credits, dict) else {}
-    credit_data = credit_data if isinstance(credit_data, dict) else {}
-    monthly_cap = _number(credit_data, "monthlyCredits")
     five_used, five_cap = _number(five, "used"), _number(five, "cap")
     weekly_used, weekly_cap = _number(weekly, "used"), _number(weekly, "cap")
-    limited = window.get("limited")
     subscription_data = subscription.get("data", subscription) if isinstance(subscription, dict) else {}
     monthly_reset_at = subscription_data.get("currentPeriodEnd") if isinstance(subscription_data, dict) else None
     monthly_reset_at = _format_datetime(monthly_reset_at)
-    monthly_pct = _percent(monthly_cost, monthly_cap)
+    monthly_pct = _percent(monthly_cost, monthly_quota)
     five_hour_pct = _percent(five_used, five_cap)
     weekly_pct = _percent(weekly_used, weekly_cap)
     five_reset_at, weekly_reset_at = _reset(five), _reset(weekly)
     available = _availability(monthly_reset_at, five_reset_at, weekly_reset_at, monthly_pct, five_hour_pct, weekly_pct)
     return Usage(
         total_tokens="—" if tokens is None else f"{tokens:,.0f}",
-        monthly=f"{_money(monthly_cost)} / {_money(monthly_cap)}",
+        monthly=f"{_money(monthly_cost)} / {_money(monthly_quota)}",
         five_hour=f"{_money(five_used)} / {_money(five_cap)}",
         weekly=f"{_money(weekly_used)} / {_money(weekly_cap)}",
         monthly_pct=monthly_pct,
