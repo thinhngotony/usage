@@ -1,0 +1,1553 @@
+{
+  "version": "1.0.0",
+  "project": {
+    "name": "usage",
+    "languages": [
+      "markdown",
+      "python",
+      "yaml"
+    ],
+    "frameworks": [],
+    "description": "A local, dependency-free dashboard for monitoring multiple Command Code API keys, limits, reset times, and token usage without sending credentials to another service.",
+    "analyzedAt": "2026-08-27T15:48:08.400Z",
+    "gitCommitHash": "7f75a61634b3d1482a6f969a1eb96041708b6c56"
+  },
+  "nodes": [
+    {
+      "id": "pipeline:.github/workflows/ci.yml",
+      "type": "pipeline",
+      "name": "ci.yml",
+      "filePath": ".github/workflows/ci.yml",
+      "summary": "GitHub Actions CI workflow that compiles and tests the Python application across Python 3.10 through 3.13 and scans tracked source for credential-shaped strings on pushes and pull requests to master.",
+      "tags": [
+        "ci-cd",
+        "github-actions",
+        "testing",
+        "python",
+        "security"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:ABOUT.md",
+      "type": "document",
+      "name": "ABOUT.md",
+      "filePath": "ABOUT.md",
+      "summary": "Explains the problem the dashboard solves, its read-only multi-account usage and redacted export capabilities, deliberately local standard-library architecture, exclusions, and intended audience.",
+      "tags": [
+        "documentation",
+        "project-overview",
+        "design-decisions",
+        "architecture"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:CHANGELOG.md",
+      "type": "document",
+      "name": "CHANGELOG.md",
+      "filePath": "CHANGELOG.md",
+      "summary": "Records the 1.0.0 release, covering multi-account imports, usage and reset reporting, dashboard and export behavior, concurrent API reads, and local credential protections.",
+      "tags": [
+        "documentation",
+        "release-history",
+        "feature-summary",
+        "security"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:CONTRIBUTING.md",
+      "type": "document",
+      "name": "CONTRIBUTING.md",
+      "filePath": "CONTRIBUTING.md",
+      "summary": "Defines the Python virtual-environment, test, and compilation workflow plus pull-request, credential-safety, dependency, and conventional-commit expectations.",
+      "tags": [
+        "documentation",
+        "development",
+        "testing",
+        "pull-requests",
+        "security"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:README.md",
+      "type": "document",
+      "name": "README.md",
+      "filePath": "README.md",
+      "summary": "Primary guide for running the local Command Code usage dashboard, importing keys, interpreting quotas and reset availability, and producing redacted exports. It also documents API endpoints, concurrency behavior, security practices, development, and related project references.",
+      "tags": [
+        "documentation",
+        "entry-point",
+        "usage-guide",
+        "configuration",
+        "security"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:SECURITY.md",
+      "type": "document",
+      "name": "SECURITY.md",
+      "filePath": "SECURITY.md",
+      "summary": "Defines private vulnerability-reporting guidance and required local credential handling, including restrictive file permissions, key revocation, HTTPS Bearer transport, and redacted exports.",
+      "tags": [
+        "documentation",
+        "security",
+        "credential-handling",
+        "vulnerability-reporting"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:.commandcode/taste/taste.md",
+      "type": "document",
+      "name": "taste.md",
+      "filePath": ".commandcode/taste/taste.md",
+      "summary": "Records two high-confidence assistant-workflow preferences covering comprehensive validation and explicitly authorized shipping behavior.",
+      "tags": [
+        "documentation",
+        "agent-preferences",
+        "validation",
+        "release-workflow"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:.github/dependabot.yml",
+      "type": "config",
+      "name": "dependabot.yml",
+      "filePath": ".github/dependabot.yml",
+      "summary": "Configures Dependabot v2 to check GitHub Actions dependencies at the repository root on a monthly schedule.",
+      "tags": [
+        "configuration",
+        "dependency-updates",
+        "github-actions",
+        "automation"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:test_usage.py",
+      "type": "file",
+      "name": "test_usage.py",
+      "filePath": "test_usage.py",
+      "summary": "Exercises key parsing, redacted exports, time-window cost aggregation, bearer-authenticated API fetching, quota calculations, reset sorting, and availability precedence with unit and local HTTP-server tests.",
+      "tags": [
+        "test",
+        "api-client",
+        "key-parsing",
+        "quota-validation",
+        "security"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:test_usage.py:test_parse_json_array_preserves_names_and_order",
+      "type": "function",
+      "name": "test_parse_json_array_preserves_names_and_order",
+      "filePath": "test_usage.py",
+      "lineRange": [
+        15,
+        16
+      ],
+      "summary": "Verifies JSON array key input preserves each optional name, API key, and source order.",
+      "tags": [
+        "test",
+        "key-parsing",
+        "ordering",
+        "validation"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:test_usage.py:test_parse_json_object_preserves_names_and_order",
+      "type": "function",
+      "name": "test_parse_json_object_preserves_names_and_order",
+      "filePath": "test_usage.py",
+      "lineRange": [
+        19,
+        20
+      ],
+      "summary": "Verifies JSON object key input becomes ordered name-and-key pairs without reordering entries.",
+      "tags": [
+        "test",
+        "key-parsing",
+        "ordering",
+        "validation"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:test_usage.py:test_parse_plain_keys_and_legacy_keys_helper",
+      "type": "function",
+      "name": "test_parse_plain_keys_and_legacy_keys_helper",
+      "filePath": "test_usage.py",
+      "lineRange": [
+        23,
+        25
+      ],
+      "summary": "Checks comma- and newline-delimited key parsing together with the legacy keys-only compatibility helper.",
+      "tags": [
+        "test",
+        "key-parsing",
+        "backward-compatibility",
+        "validation"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:test_usage.py:test_parse_malformed_json_is_rejected",
+      "type": "function",
+      "name": "test_parse_malformed_json_is_rejected",
+      "filePath": "test_usage.py",
+      "lineRange": [
+        28,
+        34
+      ],
+      "summary": "Ensures malformed JSON-like key input raises a clear ValueError instead of falling back to plain-text parsing.",
+      "tags": [
+        "test",
+        "key-parsing",
+        "error-handling",
+        "validation"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:test_usage.py:test_export_redacts_keys",
+      "type": "function",
+      "name": "test_export_redacts_keys",
+      "filePath": "test_usage.py",
+      "lineRange": [
+        37,
+        46
+      ],
+      "summary": "Confirms JSON and CSV exports retain account names and usage fields while omitting raw API keys.",
+      "tags": [
+        "test",
+        "serialization",
+        "security",
+        "key-redaction"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:test_usage.py:test_recent_cost_uses_window",
+      "type": "function",
+      "name": "test_recent_cost_uses_window",
+      "filePath": "test_usage.py",
+      "lineRange": [
+        47,
+        53
+      ],
+      "summary": "Checks recent-cost aggregation includes only usage entries at or after the requested time boundary.",
+      "tags": [
+        "test",
+        "cost-tracking",
+        "time-window",
+        "aggregation"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:test_usage.py:test_fetch_reads_summary_and_usage_with_bearer",
+      "type": "function",
+      "name": "test_fetch_reads_summary_and_usage_with_bearer",
+      "filePath": "test_usage.py",
+      "lineRange": [
+        56,
+        94
+      ],
+      "summary": "Runs fetch against a local HTTP server to verify all three API paths, Bearer authentication, value formatting, the fixed monthly quota, and reset availability.",
+      "tags": [
+        "test",
+        "integration-test",
+        "http-client",
+        "authentication",
+        "quota-validation"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:test_usage.py:test_fetch_uses_fixed_monthly_quota_not_remaining_credits",
+      "type": "function",
+      "name": "test_fetch_uses_fixed_monthly_quota_not_remaining_credits",
+      "filePath": "test_usage.py",
+      "lineRange": [
+        96,
+        114
+      ],
+      "summary": "Stubs API payloads to verify fetch reports the fixed monthly quota rather than treating remaining credits as the cap.",
+      "tags": [
+        "test",
+        "quota-validation",
+        "api-client",
+        "regression-test"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:test_usage.py:test_percent_boundaries_clamp_and_reject_invalid_caps",
+      "type": "function",
+      "name": "test_percent_boundaries_clamp_and_reject_invalid_caps",
+      "filePath": "test_usage.py",
+      "lineRange": [
+        117,
+        132
+      ],
+      "summary": "Validates percentage clamping and invalid-cap handling, then checks millisecond reset formatting and availability sort ordering.",
+      "tags": [
+        "test",
+        "percentage",
+        "reset-time",
+        "sorting",
+        "edge-cases"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:test_usage.py:test_availability_uses_exhausted_window_precedence",
+      "type": "function",
+      "name": "test_availability_uses_exhausted_window_precedence",
+      "filePath": "test_usage.py",
+      "lineRange": [
+        135,
+        139
+      ],
+      "summary": "Verifies exhausted-window precedence selects monthly, then five-hour, then weekly resets, and otherwise reports immediate availability.",
+      "tags": [
+        "test",
+        "availability",
+        "quota-validation",
+        "precedence"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:usage.py",
+      "type": "file",
+      "name": "usage.py",
+      "filePath": "usage.py",
+      "summary": "Implements the dependency-free Command Code usage dashboard: it loads multiple API keys, fetches usage and billing data concurrently, computes quota and reset availability, and renders or exports redacted results.",
+      "tags": [
+        "entry-point",
+        "cli",
+        "api-client",
+        "monitoring",
+        "serialization",
+        "tested"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Uses Python dataclasses, urllib, and bounded ThreadPoolExecutor pools to model results and parallelize API requests without third-party dependencies."
+    },
+    {
+      "id": "class:usage.py:Usage",
+      "type": "class",
+      "name": "Usage",
+      "filePath": "usage.py",
+      "lineRange": [
+        30,
+        41
+      ],
+      "summary": "Value object holding formatted token and cost windows, utilization percentages, reset timestamps, and next availability for one API key.",
+      "tags": [
+        "data-model",
+        "dataclass",
+        "usage-metrics",
+        "quota-tracking"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:usage.py:_format_datetime",
+      "type": "function",
+      "name": "_format_datetime",
+      "filePath": "usage.py",
+      "lineRange": [
+        42,
+        50
+      ],
+      "summary": "Normalizes millisecond epoch or ISO timestamps to a UTC display value while preserving unparseable text.",
+      "tags": [
+        "utility",
+        "datetime",
+        "normalization",
+        "formatting"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:usage.py:_reset",
+      "type": "function",
+      "name": "_reset",
+      "filePath": "usage.py",
+      "lineRange": [
+        53,
+        59
+      ],
+      "summary": "Finds a reset timestamp across supported API field-name variants and delegates UTC formatting.",
+      "tags": [
+        "utility",
+        "reset-time",
+        "compatibility",
+        "normalization"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:usage.py:_availability",
+      "type": "function",
+      "name": "_availability",
+      "filePath": "usage.py",
+      "lineRange": [
+        62,
+        69
+      ],
+      "summary": "Selects the reset time for the first exhausted quota window using monthly, five-hour, then weekly precedence.",
+      "tags": [
+        "availability",
+        "quota-tracking",
+        "precedence",
+        "validation"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:usage.py:_availability_sort_key",
+      "type": "function",
+      "name": "_availability_sort_key",
+      "filePath": "usage.py",
+      "lineRange": [
+        72,
+        78
+      ],
+      "summary": "Sorts immediately available accounts first, then scheduled resets chronologically, with malformed timestamps last.",
+      "tags": [
+        "sorting",
+        "availability",
+        "datetime",
+        "error-handling"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:usage.py:_percent",
+      "type": "function",
+      "name": "_percent",
+      "filePath": "usage.py",
+      "lineRange": [
+        81,
+        84
+      ],
+      "summary": "Computes a bounded utilization percentage and rejects absent or non-positive quota caps.",
+      "tags": [
+        "utility",
+        "percentage",
+        "validation",
+        "quota-tracking"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:usage.py:_parse_keys",
+      "type": "function",
+      "name": "_parse_keys",
+      "filePath": "usage.py",
+      "lineRange": [
+        89,
+        118
+      ],
+      "summary": "Parses named JSON arrays, ordered JSON maps, or comma- and newline-delimited API keys with shape and value validation.",
+      "tags": [
+        "key-parsing",
+        "validation",
+        "configuration",
+        "serialization"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:usage.py:_keys",
+      "type": "function",
+      "name": "_keys",
+      "filePath": "usage.py",
+      "lineRange": [
+        121,
+        122
+      ],
+      "summary": "Provides a compatibility view that strips optional names from parsed API key entries.",
+      "tags": [
+        "utility",
+        "key-parsing",
+        "backward-compatibility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:usage.py:_export",
+      "type": "function",
+      "name": "_export",
+      "filePath": "usage.py",
+      "lineRange": [
+        125,
+        133
+      ],
+      "summary": "Writes usage rows as JSON or CSV after removing raw API keys and retaining safe account names and metrics.",
+      "tags": [
+        "serialization",
+        "export",
+        "key-redaction",
+        "security"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:usage.py:_number",
+      "type": "function",
+      "name": "_number",
+      "filePath": "usage.py",
+      "lineRange": [
+        136,
+        141
+      ],
+      "summary": "Returns the first numeric value found among alternate API response field names.",
+      "tags": [
+        "utility",
+        "numeric-parsing",
+        "compatibility",
+        "normalization"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:usage.py:_money",
+      "type": "function",
+      "name": "_money",
+      "filePath": "usage.py",
+      "lineRange": [
+        144,
+        145
+      ],
+      "summary": "Formats numeric costs as two-decimal dollar values and represents missing values with an em dash.",
+      "tags": [
+        "utility",
+        "currency",
+        "formatting"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:usage.py:_visible_len",
+      "type": "function",
+      "name": "_visible_len",
+      "filePath": "usage.py",
+      "lineRange": [
+        151,
+        152
+      ],
+      "summary": "Measures terminal cell width after removing ANSI color escape sequences.",
+      "tags": [
+        "utility",
+        "terminal-ui",
+        "ansi"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:usage.py:_truncate",
+      "type": "function",
+      "name": "_truncate",
+      "filePath": "usage.py",
+      "lineRange": [
+        155,
+        160
+      ],
+      "summary": "Truncates terminal cell text to a requested width and uses an ellipsis when space permits.",
+      "tags": [
+        "utility",
+        "terminal-ui",
+        "text-formatting"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:usage.py:_progress_bar",
+      "type": "function",
+      "name": "_progress_bar",
+      "filePath": "usage.py",
+      "lineRange": [
+        163,
+        175
+      ],
+      "summary": "Renders a fixed-width, clamped utilization bar with optional threshold-based terminal coloring.",
+      "tags": [
+        "terminal-ui",
+        "progress-bar",
+        "formatting",
+        "quota-tracking"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:usage.py:_render_table",
+      "type": "function",
+      "name": "_render_table",
+      "filePath": "usage.py",
+      "lineRange": [
+        178,
+        203
+      ],
+      "summary": "Builds a Unicode usage table, adding utilization bars and shrinking the widest columns to fit the terminal width.",
+      "tags": [
+        "terminal-ui",
+        "table-rendering",
+        "responsive-layout",
+        "formatting"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:usage.py:_summary",
+      "type": "function",
+      "name": "_summary",
+      "filePath": "usage.py",
+      "lineRange": [
+        206,
+        213
+      ],
+      "summary": "Validates a usage summary payload and extracts token, cost, and monthly-credit values across supported field names.",
+      "tags": [
+        "api-response",
+        "normalization",
+        "validation",
+        "usage-metrics"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:usage.py:_recent_cost",
+      "type": "function",
+      "name": "_recent_cost",
+      "filePath": "usage.py",
+      "lineRange": [
+        216,
+        229
+      ],
+      "summary": "Aggregates valid usage-entry costs occurring at or after a supplied timestamp while ignoring malformed records.",
+      "tags": [
+        "cost-tracking",
+        "time-window",
+        "aggregation",
+        "validation"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:usage.py:_request",
+      "type": "function",
+      "name": "_request",
+      "filePath": "usage.py",
+      "lineRange": [
+        232,
+        249
+      ],
+      "summary": "Performs a Bearer-authenticated JSON GET request and translates HTTP, network, and decoding failures into concise runtime errors.",
+      "tags": [
+        "http-client",
+        "authentication",
+        "error-handling",
+        "serialization"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:usage.py:fetch",
+      "type": "function",
+      "name": "fetch",
+      "filePath": "usage.py",
+      "lineRange": [
+        250,
+        288
+      ],
+      "summary": "Fetches summary, credit-window, and subscription payloads concurrently, normalizes quota metrics and resets, and returns one Usage result.",
+      "tags": [
+        "api-client",
+        "concurrency",
+        "quota-tracking",
+        "aggregation",
+        "service"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:usage.py:main",
+      "type": "function",
+      "name": "main",
+      "filePath": "usage.py",
+      "lineRange": [
+        291,
+        326
+      ],
+      "summary": "Runs the CLI lifecycle: parse options and stored keys, fetch accounts concurrently, persist normalized key state, sort availability, and render or export results.",
+      "tags": [
+        "entry-point",
+        "cli",
+        "concurrency",
+        "state-management",
+        "export"
+      ],
+      "complexity": "complex"
+    }
+  ],
+  "edges": [
+    {
+      "source": "document:ABOUT.md",
+      "target": "document:README.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:ABOUT.md",
+      "target": "document:SECURITY.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:README.md",
+      "target": "document:CHANGELOG.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:README.md",
+      "target": "document:CONTRIBUTING.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:README.md",
+      "target": "document:SECURITY.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:test_usage.py",
+      "target": "function:test_usage.py:test_parse_json_array_preserves_names_and_order",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:test_usage.py",
+      "target": "function:test_usage.py:test_parse_json_array_preserves_names_and_order",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:test_usage.py",
+      "target": "function:test_usage.py:test_parse_json_object_preserves_names_and_order",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:test_usage.py",
+      "target": "function:test_usage.py:test_parse_json_object_preserves_names_and_order",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:test_usage.py",
+      "target": "function:test_usage.py:test_parse_plain_keys_and_legacy_keys_helper",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:test_usage.py",
+      "target": "function:test_usage.py:test_parse_plain_keys_and_legacy_keys_helper",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:test_usage.py",
+      "target": "function:test_usage.py:test_parse_malformed_json_is_rejected",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:test_usage.py",
+      "target": "function:test_usage.py:test_parse_malformed_json_is_rejected",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:test_usage.py",
+      "target": "function:test_usage.py:test_export_redacts_keys",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:test_usage.py",
+      "target": "function:test_usage.py:test_export_redacts_keys",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:test_usage.py",
+      "target": "function:test_usage.py:test_recent_cost_uses_window",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:test_usage.py",
+      "target": "function:test_usage.py:test_recent_cost_uses_window",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:test_usage.py",
+      "target": "function:test_usage.py:test_fetch_reads_summary_and_usage_with_bearer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:test_usage.py",
+      "target": "function:test_usage.py:test_fetch_reads_summary_and_usage_with_bearer",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:test_usage.py",
+      "target": "function:test_usage.py:test_fetch_uses_fixed_monthly_quota_not_remaining_credits",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:test_usage.py",
+      "target": "function:test_usage.py:test_fetch_uses_fixed_monthly_quota_not_remaining_credits",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:test_usage.py",
+      "target": "function:test_usage.py:test_percent_boundaries_clamp_and_reject_invalid_caps",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:test_usage.py",
+      "target": "function:test_usage.py:test_percent_boundaries_clamp_and_reject_invalid_caps",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:test_usage.py",
+      "target": "function:test_usage.py:test_availability_uses_exhausted_window_precedence",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:test_usage.py",
+      "target": "function:test_usage.py:test_availability_uses_exhausted_window_precedence",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:usage.py",
+      "target": "class:usage.py:Usage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:usage.py",
+      "target": "class:usage.py:Usage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:usage.py",
+      "target": "function:usage.py:_format_datetime",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:usage.py",
+      "target": "function:usage.py:_format_datetime",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:usage.py",
+      "target": "function:usage.py:_reset",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:usage.py",
+      "target": "function:usage.py:_reset",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:usage.py",
+      "target": "function:usage.py:_availability",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:usage.py",
+      "target": "function:usage.py:_availability",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:usage.py",
+      "target": "function:usage.py:_availability_sort_key",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:usage.py",
+      "target": "function:usage.py:_availability_sort_key",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:usage.py",
+      "target": "function:usage.py:_percent",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:usage.py",
+      "target": "function:usage.py:_percent",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:usage.py",
+      "target": "function:usage.py:_parse_keys",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:usage.py",
+      "target": "function:usage.py:_parse_keys",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:usage.py",
+      "target": "function:usage.py:_keys",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:usage.py",
+      "target": "function:usage.py:_keys",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:usage.py",
+      "target": "function:usage.py:_export",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:usage.py",
+      "target": "function:usage.py:_export",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:usage.py",
+      "target": "function:usage.py:_number",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:usage.py",
+      "target": "function:usage.py:_number",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:usage.py",
+      "target": "function:usage.py:_money",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:usage.py",
+      "target": "function:usage.py:_money",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:usage.py",
+      "target": "function:usage.py:_visible_len",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:usage.py",
+      "target": "function:usage.py:_visible_len",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:usage.py",
+      "target": "function:usage.py:_truncate",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:usage.py",
+      "target": "function:usage.py:_truncate",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:usage.py",
+      "target": "function:usage.py:_progress_bar",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:usage.py",
+      "target": "function:usage.py:_progress_bar",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:usage.py",
+      "target": "function:usage.py:_render_table",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:usage.py",
+      "target": "function:usage.py:_render_table",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:usage.py",
+      "target": "function:usage.py:_summary",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:usage.py",
+      "target": "function:usage.py:_summary",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:usage.py",
+      "target": "function:usage.py:_recent_cost",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:usage.py",
+      "target": "function:usage.py:_recent_cost",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:usage.py",
+      "target": "function:usage.py:_request",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:usage.py",
+      "target": "function:usage.py:_request",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:usage.py",
+      "target": "function:usage.py:fetch",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:usage.py",
+      "target": "function:usage.py:fetch",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:usage.py",
+      "target": "function:usage.py:main",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:usage.py",
+      "target": "function:usage.py:main",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:test_usage.py",
+      "target": "file:usage.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:usage.py",
+      "target": "file:test_usage.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "function:test_usage.py:test_parse_json_array_preserves_names_and_order",
+      "target": "function:usage.py:_parse_keys",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:test_usage.py:test_parse_json_object_preserves_names_and_order",
+      "target": "function:usage.py:_parse_keys",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:test_usage.py:test_parse_plain_keys_and_legacy_keys_helper",
+      "target": "function:usage.py:_parse_keys",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:test_usage.py:test_parse_plain_keys_and_legacy_keys_helper",
+      "target": "function:usage.py:_keys",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:test_usage.py:test_parse_malformed_json_is_rejected",
+      "target": "function:usage.py:_parse_keys",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:test_usage.py:test_export_redacts_keys",
+      "target": "function:usage.py:_export",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:test_usage.py:test_recent_cost_uses_window",
+      "target": "function:usage.py:_recent_cost",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:test_usage.py:test_fetch_reads_summary_and_usage_with_bearer",
+      "target": "function:usage.py:fetch",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:test_usage.py:test_fetch_uses_fixed_monthly_quota_not_remaining_credits",
+      "target": "function:usage.py:fetch",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:test_usage.py:test_percent_boundaries_clamp_and_reject_invalid_caps",
+      "target": "function:usage.py:_percent",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:test_usage.py:test_percent_boundaries_clamp_and_reject_invalid_caps",
+      "target": "function:usage.py:_reset",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:test_usage.py:test_percent_boundaries_clamp_and_reject_invalid_caps",
+      "target": "function:usage.py:_availability_sort_key",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:test_usage.py:test_availability_uses_exhausted_window_precedence",
+      "target": "function:usage.py:_availability",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:test_usage.py:test_export_redacts_keys",
+      "target": "class:usage.py:Usage",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "function:test_usage.py:test_percent_boundaries_clamp_and_reject_invalid_caps",
+      "target": "class:usage.py:Usage",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "function:usage.py:_reset",
+      "target": "function:usage.py:_format_datetime",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:usage.py:_keys",
+      "target": "function:usage.py:_parse_keys",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:usage.py:_render_table",
+      "target": "function:usage.py:_visible_len",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:usage.py:_render_table",
+      "target": "function:usage.py:_progress_bar",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:usage.py:_render_table",
+      "target": "function:usage.py:_truncate",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:usage.py:_summary",
+      "target": "function:usage.py:_number",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:usage.py:_recent_cost",
+      "target": "function:usage.py:_number",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:usage.py:fetch",
+      "target": "function:usage.py:_request",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:usage.py:fetch",
+      "target": "function:usage.py:_summary",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:usage.py:fetch",
+      "target": "function:usage.py:_number",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:usage.py:fetch",
+      "target": "function:usage.py:_format_datetime",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:usage.py:fetch",
+      "target": "function:usage.py:_percent",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:usage.py:fetch",
+      "target": "function:usage.py:_reset",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:usage.py:fetch",
+      "target": "function:usage.py:_availability",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:usage.py:fetch",
+      "target": "function:usage.py:_money",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:usage.py:main",
+      "target": "function:usage.py:_parse_keys",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:usage.py:main",
+      "target": "function:usage.py:fetch",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:usage.py:main",
+      "target": "function:usage.py:_availability_sort_key",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:usage.py:main",
+      "target": "function:usage.py:_export",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:usage.py:main",
+      "target": "function:usage.py:_render_table",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:usage.py:fetch",
+      "target": "class:usage.py:Usage",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "function:usage.py:main",
+      "target": "class:usage.py:Usage",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    }
+  ],
+  "layers": [
+    {
+      "id": "layer:application",
+      "name": "Usage Dashboard Application",
+      "description": "Implements the dependency-free CLI, concurrent Command Code API reads, quota and reset calculations, redacted export, and terminal dashboard rendering.",
+      "nodeIds": [
+        "file:usage.py"
+      ]
+    },
+    {
+      "id": "layer:test",
+      "name": "Test Suite",
+      "description": "Verifies key parsing, credential redaction, cost windows, authenticated API reads, quota calculations, reset sorting, and availability precedence.",
+      "nodeIds": [
+        "file:test_usage.py"
+      ]
+    },
+    {
+      "id": "layer:automation",
+      "name": "Repository Automation",
+      "description": "Runs the Python compile, test, and credential-safety CI matrix and configures monthly Dependabot updates for GitHub Actions.",
+      "nodeIds": [
+        "pipeline:.github/workflows/ci.yml",
+        "config:.github/dependabot.yml"
+      ]
+    },
+    {
+      "id": "layer:documentation",
+      "name": "Project Documentation",
+      "description": "Explains dashboard setup and operation, architecture and scope, release history, contribution and security practices, and repository workflow preferences.",
+      "nodeIds": [
+        "document:ABOUT.md",
+        "document:CHANGELOG.md",
+        "document:CONTRIBUTING.md",
+        "document:README.md",
+        "document:SECURITY.md",
+        "document:.commandcode/taste/taste.md"
+      ]
+    }
+  ],
+  "tour": [
+    {
+      "order": 1,
+      "title": "Purpose and First Run",
+      "description": "Start with README.md for the dashboard's purpose: local, dependency-free monitoring of multiple Command Code accounts without sending credentials elsewhere. Pair it with ABOUT.md to understand the deliberately read-only, standard-library scope before following the runtime path.",
+      "nodeIds": [
+        "document:README.md",
+        "document:ABOUT.md"
+      ]
+    },
+    {
+      "order": 2,
+      "title": "CLI Orchestration",
+      "description": "usage.py is the broadest file-level node, and its main flow joins key parsing, concurrent account fetches, local state persistence, availability sorting, and terminal or export output. Read this orchestration first to see how the initial key import becomes the reusable local workflow introduced in Step 1.",
+      "nodeIds": [
+        "file:usage.py"
+      ]
+    },
+    {
+      "order": 3,
+      "title": "Keys and Safe State",
+      "description": "Within usage.py, key parsing accepts named JSON arrays, ordered JSON maps, or delimited keys and rejects malformed JSON-like input instead of silently downgrading it. This establishes the ordered account identities that the remaining pipeline consumes while keeping credentials confined to local state.",
+      "nodeIds": [
+        "file:usage.py"
+      ]
+    },
+    {
+      "order": 4,
+      "title": "Concurrent API Collection",
+      "description": "Building on validated accounts, fetch performs Bearer-authenticated requests for summary, credit-window, and subscription data, normalizes failures, and produces one Usage result. The graph makes fetch the main functional hub beneath the CLI flow, reflecting bounded standard-library concurrency across endpoints and accounts.",
+      "nodeIds": [
+        "file:usage.py"
+      ],
+      "languageLesson": "Python's concurrent.futures.ThreadPoolExecutor suits independent I/O-bound HTTP calls: bounded worker pools limit simultaneous requests while preserving a straightforward synchronous result model."
+    },
+    {
+      "order": 5,
+      "title": "Quota Availability Model",
+      "description": "Each fetched response is normalized through alternate field names into a Usage dataclass, then rolling costs, bounded percentages, reset timestamps, and next-availability precedence are calculated. These decisions turn uneven API payloads into the stable account model consumed by sorting and presentation.",
+      "nodeIds": [
+        "file:usage.py"
+      ]
+    },
+    {
+      "order": 6,
+      "title": "Dashboard and Redaction",
+      "description": "With normalized Usage records in hand, usage.py renders ANSI-aware, terminal-width-adjusted tables and utilization bars or exports JSON and CSV. The export path deliberately removes raw keys, so presentation preserves account names and metrics without leaking credentials.",
+      "nodeIds": [
+        "file:usage.py"
+      ]
+    },
+    {
+      "order": 7,
+      "title": "Behavioral Contract",
+      "description": "test_usage.py imports usage.py and directly exercises the high-fan-in parsing, fetch, percentage, reset, availability, recent-cost, and export paths. Its local HTTP-server test verifies Bearer transport and all three API reads, while focused cases lock in fixed monthly quotas and credential redaction.",
+      "nodeIds": [
+        "file:test_usage.py"
+      ]
+    },
+    {
+      "order": 8,
+      "title": "Security and Collaboration",
+      "description": "After understanding runtime and tests, read SECURITY.md for the credential boundary: restrictive permissions, revocation, HTTPS Bearer transport, and redacted exports. CONTRIBUTING.md connects that boundary to the local compile and test workflow plus the project's dependency-free contribution expectations.",
+      "nodeIds": [
+        "document:SECURITY.md",
+        "document:CONTRIBUTING.md"
+      ]
+    },
+    {
+      "order": 9,
+      "title": "Automation and Maintenance",
+      "description": "ci.yml carries the application and test contracts into Python 3.10 through 3.13 CI, including compilation and credential-shaped-string scanning on pushes and pull requests. dependabot.yml complements that pipeline with monthly GitHub Actions updates, closing the tour at repository maintenance.",
+      "nodeIds": [
+        "pipeline:.github/workflows/ci.yml",
+        "config:.github/dependabot.yml"
+      ],
+      "languageLesson": "GitHub Actions YAML separates event triggers, jobs, and sequential steps; a version matrix repeats the same checks across supported Python releases."
+    }
+  ]
+}

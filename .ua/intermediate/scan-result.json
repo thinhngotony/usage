@@ -1,0 +1,89 @@
+{
+  "name": "usage",
+  "description": "A local, dependency-free dashboard for monitoring multiple Command Code API keys, limits, reset times, and token usage without sending credentials to another service.",
+  "languages": [
+    "markdown",
+    "python",
+    "yaml"
+  ],
+  "frameworks": [],
+  "files": [
+    {
+      "path": ".commandcode/taste/taste.md",
+      "language": "markdown",
+      "sizeLines": 2,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".github/dependabot.yml",
+      "language": "yaml",
+      "sizeLines": 6,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "language": "yaml",
+      "sizeLines": 38,
+      "fileCategory": "infra"
+    },
+    {
+      "path": "ABOUT.md",
+      "language": "markdown",
+      "sizeLines": 37,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "CHANGELOG.md",
+      "language": "markdown",
+      "sizeLines": 18,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "language": "markdown",
+      "sizeLines": 24,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "README.md",
+      "language": "markdown",
+      "sizeLines": 152,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "SECURITY.md",
+      "language": "markdown",
+      "sizeLines": 15,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "test_usage.py",
+      "language": "python",
+      "sizeLines": 139,
+      "fileCategory": "code"
+    },
+    {
+      "path": "usage.py",
+      "language": "python",
+      "sizeLines": 330,
+      "fileCategory": "code"
+    }
+  ],
+  "totalFiles": 10,
+  "filteredByIgnore": 14,
+  "estimatedComplexity": "small",
+  "importMap": {
+    ".commandcode/taste/taste.md": [],
+    ".github/dependabot.yml": [],
+    ".github/workflows/ci.yml": [],
+    "ABOUT.md": [],
+    "CHANGELOG.md": [],
+    "CONTRIBUTING.md": [],
+    "README.md": [],
+    "SECURITY.md": [],
+    "test_usage.py": [
+      "usage.py"
+    ],
+    "usage.py": []
+  }
+}

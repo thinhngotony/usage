@@ -1,0 +1,560 @@
+{
+  "version": "1.0.0",
+  "gitCommitHash": "7f75a61634b3d1482a6f969a1eb96041708b6c56",
+  "generatedAt": "2026-08-27T15:49:02.773Z",
+  "files": {
+    ".commandcode/taste/taste.md": {
+      "filePath": ".commandcode/taste/taste.md",
+      "contentHash": "e62bc70a522100314a82ed2e6967ac26f3455e5c7610f370390ae2b4160331dc",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 3,
+      "hasStructuralAnalysis": true
+    },
+    ".github/dependabot.yml": {
+      "filePath": ".github/dependabot.yml",
+      "contentHash": "e49b0bad89c4caf2a07bb3fa625ff431977115a81a39b455061e96534be291a0",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 7,
+      "hasStructuralAnalysis": true
+    },
+    ".github/workflows/ci.yml": {
+      "filePath": ".github/workflows/ci.yml",
+      "contentHash": "93c11d781fb7c355ba03bffe8571b61cb65ab2e24b4eceb9107bac18b6e76ace",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 39,
+      "hasStructuralAnalysis": true
+    },
+    "ABOUT.md": {
+      "filePath": "ABOUT.md",
+      "contentHash": "535309a5b77b39e10c7c24bf48b298031cf8aaa2ab8a6d64f1f84e5dd9e0910d",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 38,
+      "hasStructuralAnalysis": true
+    },
+    "CHANGELOG.md": {
+      "filePath": "CHANGELOG.md",
+      "contentHash": "ca13983e781ef400a63fe95398c7e41f491c779421326bc38a90d39464a57e42",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 19,
+      "hasStructuralAnalysis": true
+    },
+    "CONTRIBUTING.md": {
+      "filePath": "CONTRIBUTING.md",
+      "contentHash": "7e9c11947a740ac9839e0b19ed86c22c3978d1c29cfcbe89b6b89326d224a06f",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 25,
+      "hasStructuralAnalysis": true
+    },
+    "README.md": {
+      "filePath": "README.md",
+      "contentHash": "0883e3a3362e0ab31d214922462303b9c16128bb2f109430478163ae6216193f",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 153,
+      "hasStructuralAnalysis": true
+    },
+    "SECURITY.md": {
+      "filePath": "SECURITY.md",
+      "contentHash": "07d1b69e2665c28a7176fde33fedb55c13ec7f736f993e587bd1261e6415d3ee",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 16,
+      "hasStructuralAnalysis": true
+    },
+    "test_usage.py": {
+      "filePath": "test_usage.py",
+      "contentHash": "973cf51af395ac42ed901ab76ba8a358c86ad489ce6763ff210be3ea21f732c1",
+      "functions": [
+        {
+          "name": "test_parse_json_array_preserves_names_and_order",
+          "params": [],
+          "exported": true,
+          "lineCount": 2
+        },
+        {
+          "name": "test_parse_json_object_preserves_names_and_order",
+          "params": [],
+          "exported": true,
+          "lineCount": 2
+        },
+        {
+          "name": "test_parse_plain_keys_and_legacy_keys_helper",
+          "params": [],
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "test_parse_malformed_json_is_rejected",
+          "params": [],
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "test_export_redacts_keys",
+          "params": [
+            "tmp_path"
+          ],
+          "exported": true,
+          "lineCount": 10
+        },
+        {
+          "name": "test_recent_cost_uses_window",
+          "params": [],
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "test_fetch_reads_summary_and_usage_with_bearer",
+          "params": [],
+          "exported": true,
+          "lineCount": 39
+        },
+        {
+          "name": "test_fetch_uses_fixed_monthly_quota_not_remaining_credits",
+          "params": [
+            "monkeypatch"
+          ],
+          "exported": true,
+          "lineCount": 19
+        },
+        {
+          "name": "test_percent_boundaries_clamp_and_reject_invalid_caps",
+          "params": [],
+          "exported": true,
+          "lineCount": 16
+        },
+        {
+          "name": "test_availability_uses_exhausted_window_precedence",
+          "params": [],
+          "exported": true,
+          "lineCount": 5
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "json",
+          "specifiers": [
+            "json"
+          ]
+        },
+        {
+          "source": "threading",
+          "specifiers": [
+            "threading"
+          ]
+        },
+        {
+          "source": "datetime",
+          "specifiers": [
+            "datetime",
+            "timedelta",
+            "timezone"
+          ]
+        },
+        {
+          "source": "http.server",
+          "specifiers": [
+            "BaseHTTPRequestHandler",
+            "HTTPServer"
+          ]
+        },
+        {
+          "source": "usage",
+          "specifiers": [
+            "_availability",
+            "_recent_cost",
+            "fetch"
+          ]
+        },
+        {
+          "source": "pathlib",
+          "specifiers": [
+            "Path"
+          ]
+        },
+        {
+          "source": "usage",
+          "specifiers": [
+            "_export",
+            "_keys",
+            "_parse_keys"
+          ]
+        }
+      ],
+      "exports": [
+        "test_parse_json_array_preserves_names_and_order",
+        "test_parse_json_object_preserves_names_and_order",
+        "test_parse_plain_keys_and_legacy_keys_helper",
+        "test_parse_malformed_json_is_rejected",
+        "test_export_redacts_keys",
+        "test_recent_cost_uses_window",
+        "test_fetch_reads_summary_and_usage_with_bearer",
+        "test_fetch_uses_fixed_monthly_quota_not_remaining_credits",
+        "test_percent_boundaries_clamp_and_reject_invalid_caps",
+        "test_availability_uses_exhausted_window_precedence"
+      ],
+      "totalLines": 140,
+      "hasStructuralAnalysis": true
+    },
+    "usage.py": {
+      "filePath": "usage.py",
+      "contentHash": "171602ab144f27d2a78eed17f91e230a634d11e0379c4b447d9e63466c79a57c",
+      "functions": [
+        {
+          "name": "_format_datetime",
+          "params": [
+            "value"
+          ],
+          "returnType": "str | None",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "_reset",
+          "params": [
+            "data"
+          ],
+          "returnType": "str | None",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "_availability",
+          "params": [
+            "monthly_reset",
+            "five_reset",
+            "weekly_reset",
+            "monthly_pct",
+            "five_pct",
+            "weekly_pct"
+          ],
+          "returnType": "str",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "_availability_sort_key",
+          "params": [
+            "usage"
+          ],
+          "returnType": "tuple[int, datetime]",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "_percent",
+          "params": [
+            "used",
+            "cap"
+          ],
+          "returnType": "float | None",
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "_parse_keys",
+          "params": [
+            "raw"
+          ],
+          "returnType": "list[tuple[str | None, str]]",
+          "exported": true,
+          "lineCount": 30
+        },
+        {
+          "name": "_keys",
+          "params": [
+            "raw"
+          ],
+          "returnType": "list[str]",
+          "exported": true,
+          "lineCount": 2
+        },
+        {
+          "name": "_export",
+          "params": [
+            "rows",
+            "destination",
+            "format_name"
+          ],
+          "returnType": "None",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "_number",
+          "params": [
+            "data"
+          ],
+          "returnType": "float | None",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "_money",
+          "params": [
+            "value"
+          ],
+          "returnType": "str",
+          "exported": true,
+          "lineCount": 2
+        },
+        {
+          "name": "_visible_len",
+          "params": [
+            "value"
+          ],
+          "returnType": "int",
+          "exported": true,
+          "lineCount": 2
+        },
+        {
+          "name": "_truncate",
+          "params": [
+            "value",
+            "width"
+          ],
+          "returnType": "str",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "_progress_bar",
+          "params": [
+            "percent",
+            "width",
+            "color"
+          ],
+          "returnType": "str",
+          "exported": true,
+          "lineCount": 13
+        },
+        {
+          "name": "_render_table",
+          "params": [
+            "rows",
+            "width",
+            "color"
+          ],
+          "returnType": "str",
+          "exported": true,
+          "lineCount": 26
+        },
+        {
+          "name": "_summary",
+          "params": [
+            "payload"
+          ],
+          "returnType": "tuple[float | None, float | None, float | None]",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "_recent_cost",
+          "params": [
+            "payload",
+            "since"
+          ],
+          "returnType": "float",
+          "exported": true,
+          "lineCount": 14
+        },
+        {
+          "name": "_request",
+          "params": [
+            "base_url",
+            "path",
+            "key",
+            "timeout"
+          ],
+          "returnType": "Any",
+          "exported": true,
+          "lineCount": 18
+        },
+        {
+          "name": "fetch",
+          "params": [
+            "key",
+            "timeout",
+            "base_url"
+          ],
+          "returnType": "Usage",
+          "exported": true,
+          "lineCount": 39
+        },
+        {
+          "name": "main",
+          "params": [
+            "argv"
+          ],
+          "returnType": "int",
+          "exported": true,
+          "lineCount": 36
+        }
+      ],
+      "classes": [
+        {
+          "name": "Usage",
+          "methods": [],
+          "properties": [
+            "total_tokens",
+            "monthly",
+            "five_hour",
+            "weekly",
+            "monthly_pct",
+            "five_hour_pct",
+            "weekly_pct",
+            "monthly_reset_at",
+            "five_hour_reset_at",
+            "weekly_reset_at",
+            "available"
+          ],
+          "exported": true,
+          "lineCount": 12
+        }
+      ],
+      "imports": [
+        {
+          "source": "argparse",
+          "specifiers": [
+            "argparse"
+          ]
+        },
+        {
+          "source": "csv",
+          "specifiers": [
+            "csv"
+          ]
+        },
+        {
+          "source": "json",
+          "specifiers": [
+            "json"
+          ]
+        },
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "re",
+          "specifiers": [
+            "re"
+          ]
+        },
+        {
+          "source": "shutil",
+          "specifiers": [
+            "shutil"
+          ]
+        },
+        {
+          "source": "sys",
+          "specifiers": [
+            "sys"
+          ]
+        },
+        {
+          "source": "urllib.error",
+          "specifiers": [
+            "urllib.error"
+          ]
+        },
+        {
+          "source": "urllib.parse",
+          "specifiers": [
+            "urllib.parse"
+          ]
+        },
+        {
+          "source": "urllib.request",
+          "specifiers": [
+            "urllib.request"
+          ]
+        },
+        {
+          "source": "concurrent.futures",
+          "specifiers": [
+            "ThreadPoolExecutor",
+            "as_completed"
+          ]
+        },
+        {
+          "source": "dataclasses",
+          "specifiers": [
+            "asdict",
+            "dataclass"
+          ]
+        },
+        {
+          "source": "datetime",
+          "specifiers": [
+            "datetime",
+            "timedelta",
+            "timezone"
+          ]
+        },
+        {
+          "source": "pathlib",
+          "specifiers": [
+            "Path"
+          ]
+        },
+        {
+          "source": "typing",
+          "specifiers": [
+            "Any"
+          ]
+        }
+      ],
+      "exports": [
+        "Usage",
+        "_format_datetime",
+        "_reset",
+        "_availability",
+        "_availability_sort_key",
+        "_percent",
+        "_parse_keys",
+        "_keys",
+        "_export",
+        "_number",
+        "_money",
+        "_visible_len",
+        "_truncate",
+        "_progress_bar",
+        "_render_table",
+        "_summary",
+        "_recent_cost",
+        "_request",
+        "fetch",
+        "main"
+      ],
+      "totalLines": 331,
+      "hasStructuralAnalysis": true
+    }
+  }
+}
