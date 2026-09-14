@@ -45,7 +45,7 @@ The program reads only local files. It does not support API keys from environmen
 
 ## Dashboard
 
-The terminal table shows:
+The dashboard uses an aligned table when every value fits. On narrower terminals it switches to an account view, keeping every reset date visible instead of truncating it.
 
 | Column | Meaning |
 | :--- | :--- |
@@ -53,11 +53,11 @@ The terminal table shows:
 | `MONTHLY` | Current-period cost, fixed monthly quota, and progress |
 | `5-HOUR` | Rolling five-hour cost, cap, and progress |
 | `WEEKLY` | Rolling seven-day cost, cap, and progress |
-| `AVAILABLE` | `NOW` or the earliest applicable reset, formatted as `HH:MM DD/MM/YYYY` |
+| `STATUS` | `NOW`, `UNKNOWN`, an error, or the limiting reset and exact time when the account becomes usable |
 
-Monthly progress is calculated as current-period cost divided by the fixed `$10.00` monthly quota. An account waits for the monthly reset when monthly usage reaches the quota; otherwise, five-hour and weekly exhaustion determine availability.
-Accounts are sorted with currently available accounts first, then by the nearest reset time.
-Monthly exhaustion takes precedence over five-hour and weekly exhaustion.
+All reset times include the full weekday and use the unambiguous format `Tuesday 15 Sep 2026, 05:00 UTC`. A missing metric or reset time is `UNKNOWN`; `NOW` appears only when every usage window is known and below its limit. If multiple limits are exhausted, an account becomes ready only after the latest applicable reset.
+
+Monthly progress is calculated as current-period cost divided by the fixed `$10.00` monthly quota. Accounts are sorted with currently available accounts first, then by the time they become ready.
 
 Use plain output in logs and CI:
 
@@ -113,7 +113,7 @@ Write a redacted report for sharing or automation:
 ./usage.py --export usage.csv
 ```
 
-Exports include names, token totals, usage percentages, caps, reset timestamps, and availability. API keys are never exported.
+Exports include names, token totals, usage percentages, caps, reset timestamps, availability, and the limiting window. API keys are never exported.
 
 ## How It Works
 
@@ -126,7 +126,7 @@ GET https://api.commandcode.ai/alpha/billing/subscriptions
 Authorization: Bearer <key>
 ```
 
-Requests are made concurrently per account and across accounts, with a conservative four-account concurrency cap. No model request is made, so an exhausted account can still report its usage state.
+Requests are made concurrently per account and across accounts, with a bounded five-account concurrency cap. No model request is made, so an exhausted account can still report its usage state.
 
 ## Security
 

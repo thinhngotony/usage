@@ -10,8 +10,8 @@ Command Code exposes useful usage information in its authenticated Studio interf
 
 - Imports named accounts from one local JSON file.
 - Reads token totals, monthly usage, five-hour usage, and weekly usage.
-- Shows human-readable reset times and the earliest applicable availability time.
-- Sorts accounts with currently available accounts first.
+- Shows unambiguous UTC reset times and the limiting reset that determines availability.
+- Sorts accounts with currently available accounts first, then by readiness.
 - Exports redacted JSON or CSV reports.
 - Uses concurrent read-only API requests without making model calls.
 

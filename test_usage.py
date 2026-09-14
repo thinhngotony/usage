@@ -10,6 +10,7 @@ from usage import _availability, _recent_cost, fetch
 from pathlib import Path
 
 from usage import _export, _keys, _parse_keys
+from usage import Usage, _availability_sort_key, _render_table, main
 
 
 def test_parse_json_array_preserves_names_and_order():
@@ -35,7 +36,7 @@ def test_parse_malformed_json_is_rejected():
 
 
 def test_export_redacts_keys(tmp_path: Path):
-    rows = [("prod", "user_secret", __import__("usage").Usage(total_tokens="1,234"))]
+    rows = [("prod", "user_secret", __import__("usage").Usage(total_tokens="1,234", limiting_windows=("Weekly",)))]
     json_path = tmp_path / "usage.json"
     csv_path = tmp_path / "usage.csv"
     _export(rows, json_path, "json")
@@ -43,6 +44,8 @@ def test_export_redacts_keys(tmp_path: Path):
     assert "user_secret" not in json_path.read_text()
     assert "user_secret" not in csv_path.read_text()
     assert '"name": "prod"' in json_path.read_text()
+    assert json.loads(json_path.read_text())[0]["limiting_windows"] == "Weekly"
+    assert "Weekly" in csv_path.read_text()
     assert "prod" in csv_path.read_text()
 def test_recent_cost_uses_window():
     now = datetime.now(timezone.utc)
@@ -89,7 +92,9 @@ def test_fetch_reads_summary_and_usage_with_bearer():
     assert usage.monthly_pct == 100
     assert usage.five_hour == "$0.00 / $3.00"
     assert usage.weekly == "$0.00 / $6.00"
-    assert usage.available == "00:00 01/09/2026"
+    assert usage.available == "Tuesday 01 Sep 2026, 00:00 UTC"
+    assert usage.availability_at == "2026-09-01T00:00:00+00:00"
+    assert usage.limiting_windows == ("Monthly",)
     assert len(seen) == 3
     assert all(auth == "Bearer test-key" for _, auth in seen)
 
@@ -124,16 +129,119 @@ def test_percent_boundaries_clamp_and_reject_invalid_caps():
     assert _percent(1, 0) is None
     assert _percent(None, 10) is None
 
+def test_progress_bar_shows_small_usage_without_coloring_the_empty_track():
+    from usage import _progress_bar
+
+    bar = _progress_bar(8, color=True)
+
+    assert bar.startswith("[\033[32m#\033[0m")
+    assert "\033[32m-" not in bar
+    assert __import__("usage")._ANSI_RE.sub("", bar) == "[#---------]   8%"
+
+def test_metric_values_start_left_when_other_rows_are_unknown():
+    known = Usage(
+        monthly="$0.00 / $10.00",
+        five_hour="$0.00 / $3.00",
+        weekly="$0.00 / $6.00",
+        monthly_pct=0,
+        five_hour_pct=0,
+        weekly_pct=0,
+        available="NOW",
+    )
+    unknown = Usage(
+        monthly="UNKNOWN / UNKNOWN",
+        five_hour="UNKNOWN / UNKNOWN",
+        weekly="UNKNOWN / UNKNOWN",
+        available="UNKNOWN",
+    )
+
+    table = _render_table([("known", known), ("unknown", unknown)], width=200)
+    known_line = next(line for line in table.splitlines() if line.startswith("│ known "))
+    unknown_line = next(line for line in table.splitlines() if line.startswith("│ unknown "))
+    unknown_five_hour = unknown_line.find("UNKNOWN / UNKNOWN", unknown_line.find("UNKNOWN / UNKNOWN") + 1)
+
+    assert known_line.index("$0.00 / $3.00") == unknown_five_hour
+    assert "$0.00 / $3.00 [----------]   0%" in known_line
 
 
-    from usage import Usage, _availability_sort_key, _reset
-    assert _reset({"resetAt": 1786639187997}) == "16:39 13/08/2026"
+def test_availability_waits_for_last_exhausted_reset():
+    five_reset = datetime(2026, 9, 15, 5, tzinfo=timezone.utc)
+    weekly_reset = datetime(2026, 9, 15, 23, tzinfo=timezone.utc)
+
+    available, available_at, limiting_windows = _availability(None, five_reset, weekly_reset, 90, 100, 100)
+
+    assert available == "Tuesday 15 Sep 2026, 23:00 UTC"
+    assert available_at == "2026-09-15T23:00:00+00:00"
+    assert limiting_windows == ("Weekly",)
+
+
+def test_availability_marks_missing_exhausted_reset_unknown():
+    available, available_at, limiting_windows = _availability(None, None, None, 100, 50, 50)
+
+    assert available == "UNKNOWN"
+    assert available_at is None
+    assert limiting_windows == ("Monthly",)
+
+def test_availability_marks_missing_usage_unknown():
+    available, available_at, limiting_windows = _availability(None, None, None, None, 50, 50)
+
+    assert available == "UNKNOWN"
+    assert available_at is None
+    assert limiting_windows == ("Monthly",)
+
+
+def test_dates_are_utc_and_failed_usage_sorts_last():
+    from usage import _reset
+
+    assert _reset({"resetAt": 1786639187997}) == "Thursday 13 Aug 2026, 16:39 UTC"
     assert _availability_sort_key(Usage(available="NOW"))[0] == 0
-    assert _availability_sort_key(Usage(available="21:01 13/08/2026"))[0] == 1
+    assert _availability_sort_key(Usage())[0] == 2
+    assert _availability_sort_key(Usage(error="network error"))[0] == 3
 
 
-def test_availability_uses_exhausted_window_precedence():
-    assert _availability("MONTH", "FIVE", "WEEK", 100, 50, 50) == "MONTH"
-    assert _availability("MONTH", "FIVE", "WEEK", 90, 100, 50) == "FIVE"
-    assert _availability("MONTH", "FIVE", "WEEK", 90, 50, 100) == "WEEK"
-    assert _availability("MONTH", "FIVE", "WEEK", 90, 50, 50) == "NOW"
+def test_narrow_dashboard_preserves_ready_reason_and_reset_dates():
+    usage = Usage(
+        monthly="$9.50 / $10.00",
+        five_hour="$3.00 / $3.00",
+        weekly="$5.80 / $6.00",
+        monthly_pct=95,
+        five_hour_pct=100,
+        weekly_pct=97,
+        monthly_reset_at="Thursday 01 Oct 2026, 00:00 UTC",
+        five_hour_reset_at="Tuesday 15 Sep 2026, 05:00 UTC",
+        weekly_reset_at="Tuesday 15 Sep 2026, 23:00 UTC",
+        available="Tuesday 15 Sep 2026, 05:00 UTC",
+        availability_at="2026-09-15T05:00:00+00:00",
+        limiting_windows=("5-hour",),
+    )
+
+    dashboard = _render_table([("a-long-account-name", usage)], width=80)
+
+    assert "Status: 5-hour: Tuesday 15 Sep 2026, 05:00 UTC" in dashboard
+    assert "Monthly: $9.50 / $10.00" in dashboard
+    assert "Reset: Thursday 01 Oct 2026, 00:00 UTC" in dashboard
+    assert "Reset: Tuesday 15 Sep 2026, 05:00 UTC" in dashboard
+    assert "…" not in dashboard
+
+
+def test_dashboard_shows_errors_without_false_usage_values():
+    dashboard = _render_table([("offline-account", Usage(error="network unavailable"))], width=80)
+
+    assert "ERROR: network unavailable" in dashboard
+    assert "│ NOW " not in dashboard
+    assert "UNKNOWN" in dashboard
+
+
+def test_empty_key_file_is_rejected(tmp_path: Path, monkeypatch, capsys):
+    key_file = tmp_path / "keys.json"
+    key_file.write_text("[]")
+    monkeypatch.chdir(tmp_path)
+
+    try:
+        main(["--keys-file", str(key_file)])
+    except SystemExit as error:
+        assert error.code == 2
+    else:
+        raise AssertionError("empty key file should fail")
+
+    assert "contains no API keys" in capsys.readouterr().err

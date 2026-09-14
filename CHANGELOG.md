@@ -1,5 +1,23 @@
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+
+- Kept unavailable accounts unavailable when an exhausted limit has no reset time.
+- Waited for the last exhausted limit to reset before marking an account ready.
+- Preserved reset dates and the limiting window in narrow terminal output.
+- Rejected empty key files with a clear CLI error.
+- Replaced missing usage and reset values with `UNKNOWN`.
+- Added full reset weekdays and concise `NOW`/`UNKNOWN` statuses.
+- Switched progress tracks to ASCII foreground glyphs so Warp renders each row independently.
+- Left-aligned metric values independently of unknown rows.
+
+### Improved
+
+- Increased the bounded account refresh fan-out from four to five accounts.
+
+
 ## [1.0.0] - 2026-08-13
 
 ### Added
