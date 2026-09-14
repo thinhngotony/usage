@@ -45,7 +45,7 @@ The program reads only local files. It does not support API keys from environmen
 
 ## Dashboard
 
-The dashboard uses an aligned table when every value fits. On narrower terminals it switches to an account view, keeping every reset date visible instead of truncating it.
+The dashboard uses an aligned table when every value fits. Each account has a following reset line for its monthly, five-hour, and weekly limits. On narrower terminals it switches to an account view, keeping every reset date visible instead of truncating it.
 
 | Column | Meaning |
 | :--- | :--- |

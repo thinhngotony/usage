@@ -164,6 +164,25 @@ def test_metric_values_start_left_when_other_rows_are_unknown():
     assert "$0.00 / $3.00 [----------]   0%" in known_line
 
 
+def test_wide_dashboard_shows_each_reset_schedule():
+    usage = Usage(
+        monthly="$5.00 / $10.00",
+        five_hour="$1.00 / $3.00",
+        weekly="$2.00 / $6.00",
+        monthly_pct=50,
+        five_hour_pct=33,
+        weekly_pct=33,
+        monthly_reset_at="Thursday 01 Oct 2026, 00:00 UTC",
+        five_hour_reset_at="Tuesday 15 Sep 2026, 05:00 UTC",
+        weekly_reset_at="Tuesday 15 Sep 2026, 23:00 UTC",
+        available="NOW",
+    )
+
+    dashboard = _render_table([("account", usage)], width=200)
+
+    assert "Reset: Thursday 01 Oct 00:00 UTC" in dashboard
+    assert "Reset: Tuesday 15 Sep 05:00 UTC" in dashboard
+
 def test_availability_waits_for_last_exhausted_reset():
     five_reset = datetime(2026, 9, 15, 5, tzinfo=timezone.utc)
     weekly_reset = datetime(2026, 9, 15, 23, tzinfo=timezone.utc)

@@ -16,6 +16,7 @@
 ### Improved
 
 - Increased the bounded account refresh fan-out from four to five accounts.
+- Added monthly, five-hour, and weekly reset lines to the wide dashboard.
 
 
 ## [1.0.0] - 2026-08-13

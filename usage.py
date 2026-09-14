@@ -223,6 +223,17 @@ def _status(usage: Usage) -> str:
     return f"{labels or 'RESET'}: {usage.available}"
 
 
+def _table_reset(value: str | None) -> str:
+    if not value:
+        return "Reset: UNKNOWN"
+    date, separator, time = value.rpartition(", ")
+    if separator:
+        date, _, year = date.rpartition(" ")
+        if year.isdigit():
+            return f"Reset: {date} {time}"
+    return f"Reset: {value}"
+
+
 def _wrap(value: str, width: int) -> list[str]:
     if _visible_len(value) <= width:
         return [value]
@@ -269,6 +280,14 @@ def _render_table(rows: list[tuple[str, Usage]], width: int | None = None, color
             _metric(values[3], usage.weekly_pct, metric_widths[2], color),
             values[4],
         ])
+        if not usage.error:
+            cells.append([
+                "",
+                _table_reset(usage.monthly_reset_at),
+                _table_reset(usage.five_hour_reset_at),
+                _table_reset(usage.weekly_reset_at),
+                "",
+            ])
     data = [list(headers), *cells]
     widths = [max(_visible_len(row[col]) for row in data) for col in range(len(headers))]
     if width is not None and sum(widths) + 3 * len(headers) + 1 > width:
