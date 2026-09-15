@@ -229,16 +229,15 @@ def _ready_label(usage: Usage, color: bool = False) -> str:
     return _style(value, "33", color)
 
 
-def _reset_label(value: str | None, color: bool = False, brief: bool = False) -> str:
+def _reset_label(value: str | None, color: bool = False) -> str:
     if not value:
         return _style("resets UNKNOWN", "2", color)
-    if brief:
-        date, separator, time = value.rpartition(", ")
-        if separator:
-            date, _, year = date.rpartition(" ")
-            if year.isdigit():
-                return _style(f"resets {date} {time}", "2", color)
-    return _style(f"resets {value}", "2", color)
+    date, _, time = value.rpartition(", ")
+    try:
+        reset = datetime.strptime(date, "%A %d %b %Y")
+    except ValueError:
+        return _style(f"resets {value}", "2", color)
+    return _style(f"resets {reset:%d/%m} {time}", "2", color)
 
 
 def _wrap(value: str, width: int) -> list[str]:
@@ -308,7 +307,7 @@ def _render_table(rows: list[tuple[str, Usage]], width: int | None = None, color
             ]
         )
         reset_rows.append(
-            ["", *(_reset_label(getattr(usage, reset_name), color, brief=True) for _, _, reset_name in windows), ""]
+            ["", *(_reset_label(getattr(usage, reset_name), color) for _, _, reset_name in windows), ""]
         )
 
     widths = [_visible_len(header) for header in headers]

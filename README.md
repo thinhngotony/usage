@@ -55,7 +55,7 @@ The dashboard uses a sparse comparison layout: account readiness is the rightmos
 | `Weekly` | Rolling seven-day cost, cap, progress, and reset |
 | `Ready` | `NOW`, `WAIT <limit>`, `UNKNOWN`, or `ERROR` |
 
-Each reset keeps its UTC weekday, date, and time. The narrow account view retains the full year to avoid ambiguity. A missing metric or reset time is `UNKNOWN`; `NOW` appears only when every usage window is known and below its limit. If multiple limits are exhausted, an account becomes ready only after the latest applicable reset.
+Each reset uses `DD/MM HH:MM UTC`. A missing metric or reset time is `UNKNOWN`; `NOW` appears only when every usage window is known and below its limit. If multiple limits are exhausted, an account becomes ready only after the latest applicable reset.
 
 Monthly progress is calculated as current-period cost divided by the fixed `$10.00` monthly quota. Accounts are sorted with currently available accounts first, then by the time they become ready.
 

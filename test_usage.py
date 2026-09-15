@@ -184,8 +184,8 @@ def test_wide_dashboard_shows_each_reset_schedule():
     dashboard = _render_table([("account", usage)], width=160)
 
     assert "Command Code usage" in dashboard
-    assert "resets Thursday 01 Oct 00:00 UTC" in dashboard
-    assert "resets Tuesday 15 Sep 05:00 UTC" in dashboard
+    assert "resets 01/10 00:00 UTC" in dashboard
+    assert "resets 15/09 05:00 UTC" in dashboard
     assert " │ " in dashboard
 
 def test_availability_waits_for_last_exhausted_reset():
@@ -243,8 +243,8 @@ def test_narrow_dashboard_preserves_ready_reason_and_reset_dates():
 
     assert "Ready    WAIT 5-hour" in dashboard
     assert "Monthly $9.50 / $10.00" in dashboard
-    assert "resets Thursday 01 Oct 2026, 00:00 UTC" in dashboard
-    assert "resets Tuesday 15 Sep 2026, 05:00 UTC" in dashboard
+    assert "resets 01/10 00:00 UTC" in dashboard
+    assert "resets 15/09 05:00 UTC" in dashboard
     assert "…" not in dashboard
 
 
