@@ -45,17 +45,17 @@ The program reads only local files. It does not support API keys from environmen
 
 ## Dashboard
 
-The dashboard uses an aligned table when every value fits. Each account has a following reset line for its monthly, five-hour, and weekly limits. On narrower terminals it switches to an account view, keeping every reset date visible instead of truncating it.
+The dashboard uses a sparse comparison layout: account readiness is the rightmost scan target, and reset information sits quietly below its corresponding usage limit. On narrower terminals it switches to a readable account view rather than truncating data.
 
 | Column | Meaning |
 | :--- | :--- |
-| `KEY` | Name from the imported key file |
-| `MONTHLY` | Current-period cost, fixed monthly quota, and progress |
-| `5-HOUR` | Rolling five-hour cost, cap, and progress |
-| `WEEKLY` | Rolling seven-day cost, cap, and progress |
-| `STATUS` | `NOW`, `UNKNOWN`, an error, or the limiting reset and exact time when the account becomes usable |
+| `Account` | Name from the imported key file |
+| `Monthly` | Current-period cost, fixed monthly quota, progress, and reset |
+| `5-hour` | Rolling five-hour cost, cap, progress, and reset |
+| `Weekly` | Rolling seven-day cost, cap, progress, and reset |
+| `Ready` | `NOW`, `WAIT <limit>`, `UNKNOWN`, or `ERROR` |
 
-All reset times include the full weekday and use the unambiguous format `Tuesday 15 Sep 2026, 05:00 UTC`. A missing metric or reset time is `UNKNOWN`; `NOW` appears only when every usage window is known and below its limit. If multiple limits are exhausted, an account becomes ready only after the latest applicable reset.
+Each reset keeps its UTC weekday, date, and time. The narrow account view retains the full year to avoid ambiguity. A missing metric or reset time is `UNKNOWN`; `NOW` appears only when every usage window is known and below its limit. If multiple limits are exhausted, an account becomes ready only after the latest applicable reset.
 
 Monthly progress is calculated as current-period cost divided by the fixed `$10.00` monthly quota. Accounts are sorted with currently available accounts first, then by the time they become ready.
 

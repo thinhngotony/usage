@@ -212,26 +212,33 @@ def _metric(value: str, percent: float | None, width: int = 0, color: bool = Fal
     return value if percent is None else f"{value} {_progress_bar(percent, color=color)}"
 
 
-def _status(usage: Usage) -> str:
+def _style(value: str, code: str, color: bool) -> str:
+    return f"\033[{code}m{value}\033[0m" if color else value
+
+
+def _ready_label(usage: Usage, color: bool = False) -> str:
     if usage.error:
-        return f"ERROR: {usage.error}"
+        return _style("ERROR", "31", color)
     if usage.available == "NOW":
-        return "NOW"
+        return _style("NOW", "32", color)
     labels = " & ".join(usage.limiting_windows)
     if usage.available == "UNKNOWN":
-        return f"UNKNOWN ({labels})" if labels else "UNKNOWN"
-    return f"{labels or 'RESET'}: {usage.available}"
+        value = f"UNKNOWN ({labels})" if labels else "UNKNOWN"
+    else:
+        value = f"WAIT {labels or 'RESET'}"
+    return _style(value, "33", color)
 
 
-def _table_reset(value: str | None) -> str:
+def _reset_label(value: str | None, color: bool = False, brief: bool = False) -> str:
     if not value:
-        return "Reset: UNKNOWN"
-    date, separator, time = value.rpartition(", ")
-    if separator:
-        date, _, year = date.rpartition(" ")
-        if year.isdigit():
-            return f"Reset: {date} {time}"
-    return f"Reset: {value}"
+        return _style("resets UNKNOWN", "2", color)
+    if brief:
+        date, separator, time = value.rpartition(", ")
+        if separator:
+            date, _, year = date.rpartition(" ")
+            if year.isdigit():
+                return _style(f"resets {date} {time}", "2", color)
+    return _style(f"resets {value}", "2", color)
 
 
 def _wrap(value: str, width: int) -> list[str]:
@@ -246,65 +253,92 @@ def _wrap(value: str, width: int) -> list[str]:
 
 
 def _render_compact(rows: list[tuple[str, Usage]], width: int, color: bool) -> str:
-    output = []
+    output = [_style("Command Code usage", "1;36", color)]
     for key, usage in rows:
-        output.extend(_wrap(str(key), width))
-        output.extend(_wrap(f"  Status: {_status(usage)}", width))
-        if not usage.error:
-            for label, value, percent, reset_at in (
-                ("Monthly", usage.monthly, usage.monthly_pct, usage.monthly_reset_at),
-                ("5-Hour", usage.five_hour, usage.five_hour_pct, usage.five_hour_reset_at),
-                ("Weekly", usage.weekly, usage.weekly_pct, usage.weekly_reset_at),
-            ):
-                output.extend(_wrap(f"  {label}: {_metric(value, percent, color=color)}", width))
-                output.extend(_wrap(f"    Reset: {reset_at or 'UNKNOWN'}", width))
         output.append("")
+        output.extend(_wrap(_style(str(key), "1", color), width))
+        if usage.error:
+            output.extend(_wrap(_style(f"  ERROR: {usage.error}", "31", color), width))
+            continue
+        output.extend(_wrap(f"  Ready    {_ready_label(usage, color)}", width))
+        for label, value, percent, reset_at in (
+            ("Monthly", usage.monthly, usage.monthly_pct, usage.monthly_reset_at),
+            ("5-hour", usage.five_hour, usage.five_hour_pct, usage.five_hour_reset_at),
+            ("Weekly", usage.weekly, usage.weekly_pct, usage.weekly_reset_at),
+        ):
+            output.extend(_wrap(f"  {label:<8}{_metric(value, percent, color=color)}", width))
+            output.extend(_wrap(f"           {_reset_label(reset_at, color)}", width))
     return "\n".join(output).rstrip()
 
 
 def _render_table(rows: list[tuple[str, Usage]], width: int | None = None, color: bool = False) -> str:
-    """Return a complete table or a readable account view on narrow terminals."""
-    headers = ("KEY", "MONTHLY", "5-HOUR", "WEEKLY", "STATUS")
-    metric_rows = [[str(key), str(usage.monthly), str(usage.five_hour), str(usage.weekly), _status(usage)] for key, usage in rows]
-    metric_widths = (
-        max((_visible_len(values[1]) for values, (_, usage) in zip(metric_rows, rows) if usage.monthly_pct is not None), default=0),
-        max((_visible_len(values[2]) for values, (_, usage) in zip(metric_rows, rows) if usage.five_hour_pct is not None), default=0),
-        max((_visible_len(values[3]) for values, (_, usage) in zip(metric_rows, rows) if usage.weekly_pct is not None), default=0),
+    """Render a sparse usage dashboard or a readable narrow-terminal view."""
+    headers = ("Account", "Monthly", "5-hour", "Weekly", "Ready")
+    windows = (
+        ("monthly", "monthly_pct", "monthly_reset_at"),
+        ("five_hour", "five_hour_pct", "five_hour_reset_at"),
+        ("weekly", "weekly_pct", "weekly_reset_at"),
     )
-    cells = []
-    for values, (_, usage) in zip(metric_rows, rows):
-        cells.append([
-            values[0],
-            _metric(values[1], usage.monthly_pct, metric_widths[0], color),
-            _metric(values[2], usage.five_hour_pct, metric_widths[1], color),
-            _metric(values[3], usage.weekly_pct, metric_widths[2], color),
-            values[4],
-        ])
-        if not usage.error:
-            cells.append([
-                "",
-                _table_reset(usage.monthly_reset_at),
-                _table_reset(usage.five_hour_reset_at),
-                _table_reset(usage.weekly_reset_at),
-                "",
-            ])
-    data = [list(headers), *cells]
-    widths = [max(_visible_len(row[col]) for row in data) for col in range(len(headers))]
-    if width is not None and sum(widths) + 3 * len(headers) + 1 > width:
+    metric_widths = tuple(
+        max(
+            (
+                _visible_len(str(getattr(usage, value_name)))
+                for _, usage in rows
+                if getattr(usage, percent_name) is not None
+            ),
+            default=0,
+        )
+        for value_name, percent_name, _ in windows
+    )
+    primary_rows: list[list[str]] = []
+    reset_rows: list[list[str] | None] = []
+    for key, usage in rows:
+        if usage.error:
+            primary_rows.append([str(key), "", "", "", _ready_label(usage, color)])
+            reset_rows.append(None)
+            continue
+        primary_rows.append(
+            [
+                str(key),
+                *(
+                    _metric(str(getattr(usage, value_name)), getattr(usage, percent_name), metric_widths[index], color)
+                    for index, (value_name, percent_name, _) in enumerate(windows)
+                ),
+                _ready_label(usage, color),
+            ]
+        )
+        reset_rows.append(
+            ["", *(_reset_label(getattr(usage, reset_name), color, brief=True) for _, _, reset_name in windows), ""]
+        )
+
+    widths = [_visible_len(header) for header in headers]
+    for primary, reset in zip(primary_rows, reset_rows):
+        for index, value in enumerate(primary):
+            widths[index] = max(widths[index], _visible_len(value))
+        if reset:
+            for index, value in enumerate(reset):
+                widths[index] = max(widths[index], _visible_len(value))
+    content_width = sum(widths) + 2 * (len(headers) - 1)
+    if width is not None and content_width > width:
         return _render_compact(rows, width, color)
 
     def pad(value: str, cell_width: int) -> str:
         return value + " " * max(0, cell_width - _visible_len(value))
 
     def row(values: list[str]) -> str:
-        return "│ " + " │ ".join(pad(value, widths[i]) for i, value in enumerate(values)) + " │"
+        return "  ".join(pad(value, widths[index]) for index, value in enumerate(values)).rstrip()
 
-    top = "╭" + "┬".join("─" * (item + 2) for item in widths) + "╮"
-    divider = "├" + "┼".join("─" * (item + 2) for item in widths) + "┤"
-    bottom = "╰" + "┴".join("─" * (item + 2) for item in widths) + "╯"
-    output = [top, row(list(headers)), divider, *(row(values) for values in cells), bottom]
-    if color:
-        output[1] = "\033[1;36m" + output[1] + "\033[0m"
+    output = [
+        _style("Command Code usage", "1;36", color),
+        _style(row(list(headers)), "1", color),
+        _style("─" * content_width, "2", color),
+    ]
+    for primary, reset, (_, usage) in zip(primary_rows, reset_rows, rows):
+        output.append(row(primary))
+        if reset:
+            output.append(row(reset))
+        else:
+            output.extend(_wrap(_style(f"  {usage.error}", "31", color), width or content_width))
     return "\n".join(output)
 
 

@@ -156,8 +156,8 @@ def test_metric_values_start_left_when_other_rows_are_unknown():
     )
 
     table = _render_table([("known", known), ("unknown", unknown)], width=200)
-    known_line = next(line for line in table.splitlines() if line.startswith("│ known "))
-    unknown_line = next(line for line in table.splitlines() if line.startswith("│ unknown "))
+    known_line = next(line for line in table.splitlines() if line.startswith("known "))
+    unknown_line = next(line for line in table.splitlines() if line.startswith("unknown "))
     unknown_five_hour = unknown_line.find("UNKNOWN / UNKNOWN", unknown_line.find("UNKNOWN / UNKNOWN") + 1)
 
     assert known_line.index("$0.00 / $3.00") == unknown_five_hour
@@ -178,10 +178,12 @@ def test_wide_dashboard_shows_each_reset_schedule():
         available="NOW",
     )
 
-    dashboard = _render_table([("account", usage)], width=200)
+    dashboard = _render_table([("account", usage)], width=160)
 
-    assert "Reset: Thursday 01 Oct 00:00 UTC" in dashboard
-    assert "Reset: Tuesday 15 Sep 05:00 UTC" in dashboard
+    assert "Command Code usage" in dashboard
+    assert "resets Thursday 01 Oct 00:00 UTC" in dashboard
+    assert "resets Tuesday 15 Sep 05:00 UTC" in dashboard
+    assert "│" not in dashboard
 
 def test_availability_waits_for_last_exhausted_reset():
     five_reset = datetime(2026, 9, 15, 5, tzinfo=timezone.utc)
@@ -236,19 +238,20 @@ def test_narrow_dashboard_preserves_ready_reason_and_reset_dates():
 
     dashboard = _render_table([("a-long-account-name", usage)], width=80)
 
-    assert "Status: 5-hour: Tuesday 15 Sep 2026, 05:00 UTC" in dashboard
-    assert "Monthly: $9.50 / $10.00" in dashboard
-    assert "Reset: Thursday 01 Oct 2026, 00:00 UTC" in dashboard
-    assert "Reset: Tuesday 15 Sep 2026, 05:00 UTC" in dashboard
+    assert "Ready    WAIT 5-hour" in dashboard
+    assert "Monthly $9.50 / $10.00" in dashboard
+    assert "resets Thursday 01 Oct 2026, 00:00 UTC" in dashboard
+    assert "resets Tuesday 15 Sep 2026, 05:00 UTC" in dashboard
     assert "…" not in dashboard
 
 
 def test_dashboard_shows_errors_without_false_usage_values():
     dashboard = _render_table([("offline-account", Usage(error="network unavailable"))], width=80)
 
-    assert "ERROR: network unavailable" in dashboard
-    assert "│ NOW " not in dashboard
-    assert "UNKNOWN" in dashboard
+    assert "ERROR" in dashboard
+    assert "network unavailable" in dashboard
+    assert "NOW" not in dashboard
+    assert "$" not in dashboard
 
 
 def test_empty_key_file_is_rejected(tmp_path: Path, monkeypatch, capsys):
