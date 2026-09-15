@@ -162,7 +162,9 @@ def test_metric_values_start_left_when_other_rows_are_unknown():
 
     assert known_line.index("$0.00 / $3.00") == unknown_five_hour
     assert "$0.00 / $3.00 [----------]   0%" in known_line
-    assert set(table.splitlines()[table.splitlines().index(known_line) + 2]) == {"─"}
+    divider = table.splitlines()[table.splitlines().index(known_line) + 2]
+    assert "┼" in divider
+    assert set(divider) <= {"─", "┼"}
 
 
 def test_wide_dashboard_shows_each_reset_schedule():
@@ -184,7 +186,7 @@ def test_wide_dashboard_shows_each_reset_schedule():
     assert "Command Code usage" in dashboard
     assert "resets Thursday 01 Oct 00:00 UTC" in dashboard
     assert "resets Tuesday 15 Sep 05:00 UTC" in dashboard
-    assert "│" not in dashboard
+    assert " │ " in dashboard
 
 def test_availability_waits_for_last_exhausted_reset():
     five_reset = datetime(2026, 9, 15, 5, tzinfo=timezone.utc)

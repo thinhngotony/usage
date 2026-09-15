@@ -318,24 +318,26 @@ def _render_table(rows: list[tuple[str, Usage]], width: int | None = None, color
         if reset:
             for index, value in enumerate(reset):
                 widths[index] = max(widths[index], _visible_len(value))
-    content_width = sum(widths) + 2 * (len(headers) - 1)
+    content_width = sum(widths) + 3 * (len(headers) - 1)
     if width is not None and content_width > width:
         return _render_compact(rows, width, color)
 
     def pad(value: str, cell_width: int) -> str:
         return value + " " * max(0, cell_width - _visible_len(value))
 
-    def row(values: list[str]) -> str:
-        return "  ".join(pad(value, widths[index]) for index, value in enumerate(values)).rstrip()
+    def row(values: list[str], muted_dividers: bool = True) -> str:
+        divider = _style(" │ ", "2", color) if muted_dividers else " │ "
+        return divider.join(pad(value, widths[index]) for index, value in enumerate(values)).rstrip()
 
+    divider = _style("─┼─".join("─" * column_width for column_width in widths), "2", color)
     output = [
         _style("Command Code usage", "1;36", color),
-        _style(row(list(headers)), "1", color),
-        _style("─" * content_width, "2", color),
+        _style(row(list(headers), muted_dividers=False), "1", color),
+        divider,
     ]
     for index, (primary, reset, (_, usage)) in enumerate(zip(primary_rows, reset_rows, rows)):
         if index:
-            output.append(_style("─" * content_width, "2", color))
+            output.append(divider)
         output.append(row(primary))
         if reset:
             output.append(row(reset))
