@@ -333,7 +333,9 @@ def _render_table(rows: list[tuple[str, Usage]], width: int | None = None, color
         _style(row(list(headers)), "1", color),
         _style("─" * content_width, "2", color),
     ]
-    for primary, reset, (_, usage) in zip(primary_rows, reset_rows, rows):
+    for index, (primary, reset, (_, usage)) in enumerate(zip(primary_rows, reset_rows, rows)):
+        if index:
+            output.append(_style("─" * content_width, "2", color))
         output.append(row(primary))
         if reset:
             output.append(row(reset))

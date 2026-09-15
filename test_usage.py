@@ -162,6 +162,7 @@ def test_metric_values_start_left_when_other_rows_are_unknown():
 
     assert known_line.index("$0.00 / $3.00") == unknown_five_hour
     assert "$0.00 / $3.00 [----------]   0%" in known_line
+    assert set(table.splitlines()[table.splitlines().index(known_line) + 2]) == {"─"}
 
 
 def test_wide_dashboard_shows_each_reset_schedule():
