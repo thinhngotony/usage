@@ -10,11 +10,13 @@
 - Rejected empty key files with a clear CLI error.
 - Replaced missing usage and reset values with `UNKNOWN`.
 - Added full reset weekdays and concise `NOW`/`UNKNOWN` statuses.
+- Switched progress tracks to ASCII foreground glyphs so Warp renders each row independently.
+- Left-aligned metric values independently of unknown rows.
 
 ### Improved
 
 - Increased the bounded account refresh fan-out from four to five accounts.
-- Replaced multi-line metric rows with compact usage and reset columns.
+- Added monthly, five-hour, and weekly reset lines to the wide dashboard.
 
 
 ## [1.0.0] - 2026-08-13

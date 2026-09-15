@@ -129,7 +129,42 @@ def test_percent_boundaries_clamp_and_reject_invalid_caps():
     assert _percent(1, 0) is None
     assert _percent(None, 10) is None
 
-def test_wide_dashboard_uses_compact_metric_and_reset_columns():
+def test_progress_bar_shows_small_usage_without_coloring_the_empty_track():
+    from usage import _progress_bar
+
+    bar = _progress_bar(8, color=True)
+
+    assert bar.startswith("[\033[32m#\033[0m")
+    assert "\033[32m-" not in bar
+    assert __import__("usage")._ANSI_RE.sub("", bar) == "[#---------]   8%"
+
+def test_metric_values_start_left_when_other_rows_are_unknown():
+    known = Usage(
+        monthly="$0.00 / $10.00",
+        five_hour="$0.00 / $3.00",
+        weekly="$0.00 / $6.00",
+        monthly_pct=0,
+        five_hour_pct=0,
+        weekly_pct=0,
+        available="NOW",
+    )
+    unknown = Usage(
+        monthly="UNKNOWN / UNKNOWN",
+        five_hour="UNKNOWN / UNKNOWN",
+        weekly="UNKNOWN / UNKNOWN",
+        available="UNKNOWN",
+    )
+
+    table = _render_table([("known", known), ("unknown", unknown)], width=200)
+    known_line = next(line for line in table.splitlines() if line.startswith("│ known "))
+    unknown_line = next(line for line in table.splitlines() if line.startswith("│ unknown "))
+    unknown_five_hour = unknown_line.find("UNKNOWN / UNKNOWN", unknown_line.find("UNKNOWN / UNKNOWN") + 1)
+
+    assert known_line.index("$0.00 / $3.00") == unknown_five_hour
+    assert "$0.00 / $3.00 [----------]   0%" in known_line
+
+
+def test_wide_dashboard_shows_each_reset_schedule():
     usage = Usage(
         monthly="$5.00 / $10.00",
         five_hour="$1.00 / $3.00",
@@ -144,22 +179,9 @@ def test_wide_dashboard_uses_compact_metric_and_reset_columns():
     )
 
     dashboard = _render_table([("account", usage)], width=200)
-    account_line = next(line for line in dashboard.splitlines() if line.startswith("│ account "))
 
-    assert dashboard.count("│ account ") == 1
-    assert "M RESET UTC" in dashboard
-    assert "50% $5.00" in account_line
-    assert "33% $1.00" in account_line
-    assert "Thu 01 Oct 00:00 UTC" in account_line
-    assert "Tue 15 Sep 05:00 UTC" in account_line
-    assert "[----------]" not in dashboard
-
-
-def test_wide_dashboard_marks_missing_metric_and_reset_unknown():
-    dashboard = _render_table([("unknown", Usage())], width=200)
-
-    assert "UNKNOWN / UNKNOWN" not in dashboard
-    assert dashboard.count("UNKNOWN") >= 7
+    assert "Reset: Thursday 01 Oct 00:00 UTC" in dashboard
+    assert "Reset: Tuesday 15 Sep 05:00 UTC" in dashboard
 
 def test_availability_waits_for_last_exhausted_reset():
     five_reset = datetime(2026, 9, 15, 5, tzinfo=timezone.utc)
@@ -214,8 +236,8 @@ def test_narrow_dashboard_preserves_ready_reason_and_reset_dates():
 
     dashboard = _render_table([("a-long-account-name", usage)], width=80)
 
-    assert "Status: WAIT 5H" in dashboard
-    assert "Monthly: 95% $9.50" in dashboard
+    assert "Status: 5-hour: Tuesday 15 Sep 2026, 05:00 UTC" in dashboard
+    assert "Monthly: $9.50 / $10.00" in dashboard
     assert "Reset: Thursday 01 Oct 2026, 00:00 UTC" in dashboard
     assert "Reset: Tuesday 15 Sep 2026, 05:00 UTC" in dashboard
     assert "…" not in dashboard
@@ -224,8 +246,9 @@ def test_narrow_dashboard_preserves_ready_reason_and_reset_dates():
 def test_dashboard_shows_errors_without_false_usage_values():
     dashboard = _render_table([("offline-account", Usage(error="network unavailable"))], width=80)
 
-    assert "Status: ERROR" in dashboard
-    assert "Error: network unavailable" in dashboard
+    assert "ERROR: network unavailable" in dashboard
+    assert "│ NOW " not in dashboard
+    assert "UNKNOWN" in dashboard
 
 
 def test_empty_key_file_is_rejected(tmp_path: Path, monkeypatch, capsys):

@@ -45,20 +45,17 @@ The program reads only local files. It does not support API keys from environmen
 
 ## Dashboard
 
-The dashboard keeps one compact row per account. Wide terminals separate usage and reset information into scan-friendly columns; narrower terminals switch to an account view with full reset dates.
+The dashboard uses an aligned table when every value fits. Each account has a following reset line for its monthly, five-hour, and weekly limits. On narrower terminals it switches to an account view, keeping every reset date visible instead of truncating it.
 
 | Column | Meaning |
 | :--- | :--- |
 | `KEY` | Name from the imported key file |
-| `MONTH` | Current-period usage percentage and spend |
-| `5H` | Rolling five-hour usage percentage and spend |
-| `WEEK` | Rolling seven-day usage percentage and spend |
-| `M RESET UTC` | Monthly reset day and time |
-| `5H RESET UTC` | Five-hour reset day and time |
-| `W RESET UTC` | Weekly reset day and time |
-| `STATUS` | `NOW`, `WAIT <window>`, `UNKNOWN`, or `ERROR` |
+| `MONTHLY` | Current-period cost, fixed monthly quota, and progress |
+| `5-HOUR` | Rolling five-hour cost, cap, and progress |
+| `WEEKLY` | Rolling seven-day cost, cap, and progress |
+| `STATUS` | `NOW`, `UNKNOWN`, an error, or the limiting reset and exact time when the account becomes usable |
 
-Wide tables use compact UTC dates such as `Thu 01 Oct 00:00 UTC`; narrow account views keep the full date. A missing metric or reset time is `UNKNOWN`; `NOW` appears only when every usage window is known and below its limit.
+All reset times include the full weekday and use the unambiguous format `Tuesday 15 Sep 2026, 05:00 UTC`. A missing metric or reset time is `UNKNOWN`; `NOW` appears only when every usage window is known and below its limit. If multiple limits are exhausted, an account becomes ready only after the latest applicable reset.
 
 Monthly progress is calculated as current-period cost divided by the fixed `$10.00` monthly quota. Accounts are sorted with currently available accounts first, then by the time they become ready.
 

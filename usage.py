@@ -182,38 +182,56 @@ def _number(data: dict[str, Any], *names: str) -> float | None:
 def _money(value: float | None) -> str:
     return "UNKNOWN" if value is None else f"${value:.2f}"
 _ANSI_RE = re.compile(r"\x1b\[[0-9;]*m")
+_BAR_FULL = "#"
+_BAR_EMPTY = "-"
 
 
 def _visible_len(value: str) -> int:
     return len(_ANSI_RE.sub("", value))
 
 
-def _usage_metric(value: str, percent: float | None) -> str:
+
+
+def _progress_bar(percent: float | None, width: int = 10, color: bool = False) -> str:
+    """Render a clamped percentage as a fixed-width progress bar."""
+    width = max(1, width)
     if percent is None:
         return "UNKNOWN"
-    used, separator, _ = value.partition(" / ")
-    return f"{percent:.0f}% {used if separator else value}"
+    bounded = max(0.0, min(100.0, float(percent)))
+    filled = min(width, max(1 if bounded > 0 else 0, int(bounded * width / 100)))
+    full = _BAR_FULL * filled
+    empty = _BAR_EMPTY * (width - filled)
+    text = f"[{full}{empty}] {bounded:3.0f}%"
+    if not color or not full:
+        return text
+    shade = "\033[31m" if bounded >= 85 else "\033[33m" if bounded >= 65 else "\033[32m"
+    return f"[{shade}{full}\033[0m{empty}] {bounded:3.0f}%"
+
+def _metric(value: str, percent: float | None, width: int = 0, color: bool = False) -> str:
+    value = value.ljust(width)
+    return value if percent is None else f"{value} {_progress_bar(percent, color=color)}"
 
 
 def _status(usage: Usage) -> str:
     if usage.error:
-        return "ERROR"
-    if usage.available in ("NOW", "UNKNOWN"):
-        return usage.available
-    labels = {"Monthly": "M", "5-hour": "5H", "Weekly": "W"}
-    return f"WAIT {' & '.join(labels.get(label, label) for label in usage.limiting_windows) or 'RESET'}"
+        return f"ERROR: {usage.error}"
+    if usage.available == "NOW":
+        return "NOW"
+    labels = " & ".join(usage.limiting_windows)
+    if usage.available == "UNKNOWN":
+        return f"UNKNOWN ({labels})" if labels else "UNKNOWN"
+    return f"{labels or 'RESET'}: {usage.available}"
 
 
 def _table_reset(value: str | None) -> str:
     if not value:
-        return "UNKNOWN"
+        return "Reset: UNKNOWN"
     date, separator, time = value.rpartition(", ")
     if separator:
         date, _, year = date.rpartition(" ")
         if year.isdigit():
-            day, _, date = date.partition(" ")
-            return f"{day[:3]} {date} {time}"
-    return value
+            return f"Reset: {date} {time}"
+    return f"Reset: {value}"
 
 
 def _wrap(value: str, width: int) -> list[str]:
@@ -227,45 +245,53 @@ def _wrap(value: str, width: int) -> list[str]:
     ) or [""]
 
 
-def _render_compact(rows: list[tuple[str, Usage]], width: int) -> str:
+def _render_compact(rows: list[tuple[str, Usage]], width: int, color: bool) -> str:
     output = []
     for key, usage in rows:
         output.extend(_wrap(str(key), width))
         output.extend(_wrap(f"  Status: {_status(usage)}", width))
-        if usage.error:
-            output.extend(_wrap(f"  Error: {usage.error}", width))
-        else:
+        if not usage.error:
             for label, value, percent, reset_at in (
                 ("Monthly", usage.monthly, usage.monthly_pct, usage.monthly_reset_at),
                 ("5-Hour", usage.five_hour, usage.five_hour_pct, usage.five_hour_reset_at),
                 ("Weekly", usage.weekly, usage.weekly_pct, usage.weekly_reset_at),
             ):
-                output.extend(_wrap(f"  {label}: {_usage_metric(value, percent)}", width))
+                output.extend(_wrap(f"  {label}: {_metric(value, percent, color=color)}", width))
                 output.extend(_wrap(f"    Reset: {reset_at or 'UNKNOWN'}", width))
         output.append("")
     return "\n".join(output).rstrip()
 
 
 def _render_table(rows: list[tuple[str, Usage]], width: int | None = None, color: bool = False) -> str:
-    """Return a compact table or readable account view on narrow terminals."""
-    headers = ("KEY", "MONTH", "5H", "WEEK", "M RESET UTC", "5H RESET UTC", "W RESET UTC", "STATUS")
-    cells = [
-        [
-            str(key),
-            _usage_metric(usage.monthly, usage.monthly_pct),
-            _usage_metric(usage.five_hour, usage.five_hour_pct),
-            _usage_metric(usage.weekly, usage.weekly_pct),
-            _table_reset(usage.monthly_reset_at),
-            _table_reset(usage.five_hour_reset_at),
-            _table_reset(usage.weekly_reset_at),
-            _status(usage),
-        ]
-        for key, usage in rows
-    ]
+    """Return a complete table or a readable account view on narrow terminals."""
+    headers = ("KEY", "MONTHLY", "5-HOUR", "WEEKLY", "STATUS")
+    metric_rows = [[str(key), str(usage.monthly), str(usage.five_hour), str(usage.weekly), _status(usage)] for key, usage in rows]
+    metric_widths = (
+        max((_visible_len(values[1]) for values, (_, usage) in zip(metric_rows, rows) if usage.monthly_pct is not None), default=0),
+        max((_visible_len(values[2]) for values, (_, usage) in zip(metric_rows, rows) if usage.five_hour_pct is not None), default=0),
+        max((_visible_len(values[3]) for values, (_, usage) in zip(metric_rows, rows) if usage.weekly_pct is not None), default=0),
+    )
+    cells = []
+    for values, (_, usage) in zip(metric_rows, rows):
+        cells.append([
+            values[0],
+            _metric(values[1], usage.monthly_pct, metric_widths[0], color),
+            _metric(values[2], usage.five_hour_pct, metric_widths[1], color),
+            _metric(values[3], usage.weekly_pct, metric_widths[2], color),
+            values[4],
+        ])
+        if not usage.error:
+            cells.append([
+                "",
+                _table_reset(usage.monthly_reset_at),
+                _table_reset(usage.five_hour_reset_at),
+                _table_reset(usage.weekly_reset_at),
+                "",
+            ])
     data = [list(headers), *cells]
     widths = [max(_visible_len(row[col]) for row in data) for col in range(len(headers))]
     if width is not None and sum(widths) + 3 * len(headers) + 1 > width:
-        return _render_compact(rows, width)
+        return _render_compact(rows, width, color)
 
     def pad(value: str, cell_width: int) -> str:
         return value + " " * max(0, cell_width - _visible_len(value))
